@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./Crud_usu.css"; // O el nombre que le pongas a tu CSS
+import API_BASE_URL from "../api"; // 👈 Importamos la URL centralizada
+import "./Crud_usu.css"; 
 
 export default function Crud_usu() {
   const navigate = useNavigate();
@@ -31,8 +32,8 @@ export default function Crud_usu() {
     const queryString = params.toString();
 
     setLoading(true);
-    // Nota: La ruta coincide con la definida en el backend (api/usuarios)
-    return fetch(`https://abejanet-backend-cplf.onrender.com/api/usuarios?${queryString}`)
+    // ✅ Ahora usa la URL dinámica de localhost:4000
+    return fetch(`${API_BASE_URL}/usuarios?${queryString}`)
       .then((res) => res.json())
       .then((data) => {
         setUsuarios(data);
@@ -44,14 +45,13 @@ export default function Crud_usu() {
   };
 
   const cargarRoles = () => {
-    // Asegúrate de tener este endpoint o ajusta esta parte
-    return fetch("https://abejanet-backend-cplf.onrender.com/api/roles")
+    // ✅ Ahora usa la URL dinámica de localhost:4000
+    return fetch(`${API_BASE_URL}/roles`)
       .then((res) => res.json())
       .then((data) => setRoles(data))
       .catch((err) => {
         console.error("Error al cargar roles:", err);
-        // Fallback si falla el endpoint
-        setRoles([{id:1, nombre: 'Admin'}, {id:2, nombre:'Cliente'}]);
+        setRoles([{id:1, nombre: 'administrador'}, {id:2, nombre:'usuario'}]);
       });
   };
 
@@ -87,16 +87,14 @@ export default function Crud_usu() {
 
     const method = editing ? "PUT" : "POST";
     const url = editing
-      ? `https://abejanet-backend-cplf.onrender.com/api/usuarios/${editing}`
-      : "https://abejanet-backend-cplf.onrender.com/api/usuarios";
+      ? `${API_BASE_URL}/usuarios/${editing}`
+      : `${API_BASE_URL}/usuarios`;
 
-    // Convertir 'esta_activo' string a boolean para la DB
     const payload = {
         ...formData,
         esta_activo: formData.esta_activo === "true"
     };
 
-    // Si editamos y la contraseña está vacía, la eliminamos del payload
     if(editing && !payload.contrasena) {
         delete payload.contrasena;
     }
@@ -110,8 +108,7 @@ export default function Crud_usu() {
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
           throw new Error(
-            errorData.error ||
-              `Error ${res.status}: No se pudo completar la operación`
+            errorData.error || `Error ${res.status}: Operación fallida`
           );
         }
         return res.json();
@@ -122,7 +119,6 @@ export default function Crud_usu() {
         alert(editing ? "Usuario actualizado" : "Usuario creado");
       })
       .catch((err) => {
-        console.error("Error al guardar usuario:", err.message);
         alert(err.message);
       });
   };
@@ -134,7 +130,7 @@ export default function Crud_usu() {
       apellido_paterno: usuario.apellido_paterno || "",
       apellido_materno: usuario.apellido_materno || "",
       correo_electronico: usuario.correo_electronico || "",
-      contrasena: "", // Se deja vacía por seguridad
+      contrasena: "", 
       rol_id: usuario.rol_id || "",
       esta_activo: usuario.esta_activo ? "true" : "false"
     });
@@ -143,7 +139,7 @@ export default function Crud_usu() {
 
   const handleDelete = (id) => {
     if (window.confirm("¿Seguro que deseas eliminar este usuario?")) {
-      fetch(`https://abejanet-backend-cplf.onrender.com/api/usuarios/${id}`, {
+      fetch(`${API_BASE_URL}/usuarios/${id}`, {
         method: "DELETE",
       })
         .then((res) => res.json())
@@ -158,163 +154,69 @@ export default function Crud_usu() {
 
   return (
     <div className="usuarios-layout">
-      {/* SIDEBAR */}
       <aside className="usuarios-sidebar">
         <div className="usuarios-logo" onClick={() => navigate("/dashboard")}>
           <span className="usuarios-logo-icon">🐝</span>
           <span className="usuarios-logo-text">AbejaNet</span>
         </div>
-
         <nav className="usuarios-nav">
-          <button className="usuarios-nav-item" onClick={() => navigate("/dashboard")}>
-            <span>🏠</span> <span>Inicio</span>
-          </button>
-          <button className="sensores-nav-item" onClick={() => navigate("/apiarios")}>
-            
-            <span>🏷️</span> <span>Apiarios</span>
-          </button>
-          <button className="usuarios-nav-item" onClick={() => navigate("/colmenas")}>
-            <span>🍯</span> <span>Colmenas</span>
-          </button>
-          <button className="usuarios-nav-item" onClick={() => navigate("/sensores")}>
-            <span>📡</span> <span>Sensores</span>
-          </button>
-          {/* Botón activo */}
-          <button className="usuarios-nav-item usuarios-nav-item-active" onClick={() => navigate("/usuarios")}>
-            <span>👥</span> <span>Usuarios</span>
-          </button>
-          <button className="usuarios-nav-item" onClick={() => navigate("/cuenta")}>
-            <span>👤</span> <span>Cuenta</span>
-          </button>
+          <button className="usuarios-nav-item" onClick={() => navigate("/dashboard")}>🏠 Inicio</button>
+          <button className="usuarios-nav-item" onClick={() => navigate("/apiarios")}>🏷️ Apiarios</button>
+          <button className="usuarios-nav-item" onClick={() => navigate("/colmenas")}>🍯 Colmenas</button>
+          <button className="usuarios-nav-item" onClick={() => navigate("/sensores")}>📡 Sensores</button>
+          <button className="usuarios-nav-item usuarios-nav-item-active" onClick={() => navigate("/usuarios")}>👥 Usuarios</button>
+          <button className="usuarios-nav-item" onClick={() => navigate("/cuenta")}>👤 Cuenta</button>
         </nav>
       </aside>
 
-      {/* MAIN CONTENT */}
       <main className="usuarios-main">
         <header className="usuarios-header">
           <div>
             <p className="usuarios-badge">Administración</p>
             <h1>Gestión de Usuarios</h1>
-            <p className="usuarios-subtitle">
-              Administra el acceso y roles de los usuarios del sistema.
-            </p>
+            <p className="usuarios-subtitle">Administra el acceso y roles de los usuarios.</p>
           </div>
           <div className="usuarios-header-resumen">
-            <span className="usuarios-resumen-pill">
-              Total: <strong>{usuarios.length}</strong>
-            </span>
+            <span className="usuarios-resumen-pill">Total: <strong>{usuarios.length}</strong></span>
           </div>
         </header>
 
-        {/* TARJETA: FILTROS + FORMULARIO */}
         <section className="usuarios-card">
           <div className="form-usuario-filtros">
-            <input
-              type="text"
-              placeholder="Buscar por correo..."
-              value={filtroCorreo}
-              onChange={(e) => setFiltroCorreo(e.target.value)}
-            />
-            <button
-              type="button"
-              className="btn-secundario"
-              onClick={limpiarFiltros}
-            >
-              Limpiar
-            </button>
+            <input type="text" placeholder="Buscar por correo..." value={filtroCorreo} onChange={(e) => setFiltroCorreo(e.target.value)} />
+            <button type="button" className="btn-secundario" onClick={limpiarFiltros}>Limpiar</button>
           </div>
 
           <form className="form-usuario" onSubmit={handleSubmit}>
-            <input
-              type="text"
-              name="nombre"
-              placeholder="Nombre"
-              value={formData.nombre}
-              onChange={handleChange}
-              required
-            />
-             <input
-              type="text"
-              name="apellido_paterno"
-              placeholder="Apellido Paterno"
-              value={formData.apellido_paterno}
-              onChange={handleChange}
-            />
-             <input
-              type="text"
-              name="apellido_materno"
-              placeholder="Apellido Materno"
-              value={formData.apellido_materno}
-              onChange={handleChange}
-            />
+            <input type="text" name="nombre" placeholder="Nombre" value={formData.nombre} onChange={handleChange} required />
+            <input type="text" name="apellido_paterno" placeholder="Apellido Paterno" value={formData.apellido_paterno} onChange={handleChange} />
+            <input type="text" name="apellido_materno" placeholder="Apellido Materno" value={formData.apellido_materno} onChange={handleChange} />
+            <input type="email" name="correo_electronico" placeholder="Correo Electrónico" value={formData.correo_electronico} onChange={handleChange} required />
             
-            <input
-              type="email"
-              name="correo_electronico"
-              placeholder="Correo Electrónico"
-              value={formData.correo_electronico}
-              onChange={handleChange}
-              required
-            />
-
-            <select
-              name="rol_id"
-              value={formData.rol_id}
-              onChange={handleChange}
-              required
-            >
+            <select name="rol_id" value={formData.rol_id} onChange={handleChange} required >
               <option value="">-- Seleccionar Rol --</option>
               {roles.map((rol) => (
-                <option key={rol.id} value={rol.id}>
-                  {rol.nombre}
-                </option>
+                <option key={rol.id} value={rol.id}>{rol.nombre}</option>
               ))}
             </select>
 
-            <select
-              name="esta_activo"
-              value={formData.esta_activo}
-              onChange={handleChange}
-              required
-            >
+            <select name="esta_activo" value={formData.esta_activo} onChange={handleChange} required >
                <option value="true">Activo</option>
                <option value="false">Inactivo</option>
             </select>
 
-            <input
-              type="password"
-              name="contrasena"
-              placeholder={editing ? "Nueva Contraseña (Opcional)" : "Contraseña"}
-              value={formData.contrasena}
-              onChange={handleChange}
-              required={!editing} 
-            />
+            <input type="password" name="contrasena" placeholder={editing ? "Nueva Contraseña (Opcional)" : "Contraseña"} value={formData.contrasena} onChange={handleChange} required={!editing} />
 
             <div className="form-usuario-actions">
-              <button type="submit" className="btn-primario">
-                {editing ? "Actualizar Usuario" : "Crear Usuario"}
-              </button>
-              {editing && (
-                <button
-                  type="button"
-                  className="btn-secundario"
-                  onClick={resetForm}
-                >
-                  Cancelar
-                </button>
-              )}
+              <button type="submit" className="btn-primario">{editing ? "Actualizar" : "Crear"}</button>
+              {editing && <button type="button" className="btn-secundario" onClick={resetForm}>Cancelar</button>}
             </div>
           </form>
         </section>
 
-        {/* TARJETA: TABLA */}
         <section className="usuarios-card">
           {loading ? (
             <div className="cuenta-loading">Cargando usuarios...</div>
-          ) : usuarios.length === 0 ? (
-            <p className="usuarios-empty">
-              No hay usuarios que coincidan con los filtros.
-            </p>
           ) : (
             <div className="tabla-wrapper">
               <table className="tabla-usuarios">
@@ -339,18 +241,8 @@ export default function Crud_usu() {
                         </span>
                       </td>
                       <td className="tabla-usuarios-actions">
-                        <button
-                          className="editar"
-                          onClick={() => handleEdit(usu)}
-                        >
-                          ✏️
-                        </button>
-                        <button
-                          className="eliminar"
-                          onClick={() => handleDelete(usu.id)}
-                        >
-                          🗑️
-                        </button>
+                        <button className="editar" onClick={() => handleEdit(usu)}>✏️</button>
+                        <button className="eliminar" onClick={() => handleDelete(usu.id)}>🗑️</button>
                       </td>
                     </tr>
                   ))}

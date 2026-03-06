@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import API_BASE_URL from "../api"; // 👈 Importamos la URL centralizada
 import "./CreateColmenaPage.css";
 
 export default function CreateColmenaPage() {
@@ -16,7 +17,8 @@ export default function CreateColmenaPage() {
 
   // Cargar apiarios al iniciar
   useEffect(() => {
-    fetch("https://abejanet-backend-cplf.onrender.com/api/apiarios")
+    // ✅ Ahora usa la URL dinámica de localhost:4000
+    fetch(`${API_BASE_URL}/apiarios`)
       .then((r) => r.json())
       .then((data) => setApiarios(data || []))
       .catch(() => setApiarios([]));
@@ -41,14 +43,12 @@ export default function CreateColmenaPage() {
 
     try {
       setLoading(true);
-      const res = await fetch(
-        "https://abejanet-backend-cplf.onrender.com/api/colmenas",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(form),
-        }
-      );
+      // ✅ Ahora usa la URL dinámica de localhost:4000
+      const res = await fetch(`${API_BASE_URL}/colmenas`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
 
       const data = await res.json();
 
@@ -68,13 +68,11 @@ export default function CreateColmenaPage() {
   return (
     <div className="create-colmena-root">
       <div className="create-colmena-shell">
-        {/* Encabezado */}
         <header className="create-colmena-header">
           <div>
             <h2>➕ Crear nueva colmena</h2>
             <p className="create-colmena-sub">
-              Registra una colmena dentro de uno de tus apiarios para comenzar a
-              monitorearla.
+              Registra una colmena dentro de uno de tus apiarios para comenzar a monitorearla.
             </p>
           </div>
           <Link to="/colmenas" className="crumb-link">
@@ -83,12 +81,7 @@ export default function CreateColmenaPage() {
         </header>
 
         <div className="create-colmena-layout">
-          {/* Tarjeta principal del formulario */}
-          <form
-            onSubmit={handleSubmit}
-            className="create-colmena-form-card"
-          >
-            {/* Combo de apiarios */}
+          <form onSubmit={handleSubmit} className="create-colmena-form-card">
             <label className="form-field">
               <span>Apiario *</span>
               <select
@@ -106,7 +99,6 @@ export default function CreateColmenaPage() {
               </select>
             </label>
 
-            {/* Nombre */}
             <label className="form-field">
               <span>Nombre de la colmena *</span>
               <input
@@ -119,7 +111,6 @@ export default function CreateColmenaPage() {
               />
             </label>
 
-            {/* Descripción */}
             <label className="form-field">
               <span>Descripción (opcional)</span>
               <textarea
@@ -131,7 +122,6 @@ export default function CreateColmenaPage() {
               />
             </label>
 
-            {/* Mensajes */}
             {errorMsg && (
               <div className="alert error">
                 <p>{errorMsg}</p>
@@ -143,7 +133,6 @@ export default function CreateColmenaPage() {
               </div>
             )}
 
-            {/* Botones */}
             <div className="form-actions">
               <button type="submit" disabled={loading}>
                 {loading ? "Creando..." : "Crear colmena"}
@@ -151,32 +140,16 @@ export default function CreateColmenaPage() {
             </div>
           </form>
 
-          {/* Columna derecha con info / tips */}
           <aside className="create-colmena-aside">
             <h3>🐝 Buenas prácticas</h3>
             <ul>
-              <li>
-                Usa nombres que te ayuden a ubicarla rápido
-                <br />
-                <span className="hint">Ejemplo: “Norte 1”, “Sur 3 – Producción”.</span>
-              </li>
-              <li>
-                La descripción es ideal para anotar
-                <br />
-                <span className="hint">
-                  Estado de la reina, recambios, tratamientos recientes, etc.
-                </span>
-              </li>
-              <li>
-                Asegúrate de asignarla al apiario correcto para
-                que los reportes sean más claros.
-              </li>
+              <li>Usa nombres descriptivos (ej. "Lado Este - 01").</li>
+              <li>Anota cambios de reina o tratamientos en la descripción.</li>
+              <li>Verifica que el apiario sea el correcto para reportes precisos.</li>
             </ul>
-
             <div className="create-colmena-meta">
               <p>
-                Cada colmena registrada se conectará con tus sensores para
-                mostrar peso, ambiente y alertas dentro del panel principal.
+                Los sensores vinculados a esta colmena enviarán datos en tiempo real al panel.
               </p>
             </div>
           </aside>

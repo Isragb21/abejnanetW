@@ -2,7 +2,7 @@
 const { Pool } = require("pg");
 require("dotenv").config();
 
-// (En producción es mejor NO loguear credenciales, puedes comentar esto)
+// Logs de ayuda (buenos para debuguear, quítalos en producción)
 console.log("DB_HOST:", process.env.DB_HOST);
 console.log("DB_USER:", process.env.DB_USER);
 console.log("DB_NAME:", process.env.DB_NAME);
@@ -13,12 +13,13 @@ const pool = new Pool({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  ssl: { rejectUnauthorized: false },
+  // MODIFICACIÓN AQUÍ: Solo usa SSL si NO estás en localhost o si la base de datos lo exige
+  ssl: process.env.DB_HOST === 'localhost' ? false : { rejectUnauthorized: false },
 
-  // opciones del pool
-  max: 10,                 // conexiones máximas
-  idleTimeoutMillis: 30000, // tiempo máxima inactiva
-  connectionTimeoutMillis: 20000, // timeout al conectar (Incrementado a 20s)
+  // Opciones del pool
+  max: 10,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 20000,
 });
 
 // Test de conexión
@@ -30,9 +31,10 @@ pool
   })
   .catch((err) => {
     console.error("❌ Error de conexión:", err.message);
+    console.error("💡 Tip: Si el error es de SSL, prueba comentando la línea de ssl en db.js");
   });
 
-// Cierre limpio cuando mates el server (Ctrl+C)
+// Cierre limpio (Ctrl+C)
 const shutdown = async () => {
   try {
     await pool.end();

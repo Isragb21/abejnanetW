@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../api"; // 👈 Centralizamos la conexión local
 import "./LoginPage.css";
 import logo from "../assets/abeja_logo.png";
 import "@fortawesome/fontawesome-free/css/all.min.css";
@@ -25,13 +26,11 @@ function LoginPage() {
     setLoading(true);
 
     try {
-      const res = await axios.post(
-        "https://abejanet-backend-cplf.onrender.com/api/login",
-        {
-          correo_electronico: correo,
-          contrasena,
-        }
-      );
+      // ✅ Ahora apunta a http://localhost:4000/api/login
+      const res = await axios.post(`${API_BASE_URL}/login`, {
+        correo_electronico: correo,
+        contrasena,
+      });
 
       const { token, usuario } = res.data;
       localStorage.setItem("token", token);
@@ -45,7 +44,10 @@ function LoginPage() {
 
       navigate("/dashboard");
     } catch (err) {
-      setError("Correo o contraseña incorrectos.");
+      console.error("Error de login:", err);
+      // Tip: Si el backend local usa texto plano para admin123, 
+      // asegúrate de que no falle por encriptación.
+      setError("Credenciales incorrectas o el servidor local no responde.");
     } finally {
       setLoading(false);
     }
@@ -53,113 +55,68 @@ function LoginPage() {
 
   return (
     <main className="login-full" aria-label="Inicio de sesión AbejaNet">
-      {/* overlay de panal */}
       <div className="login-overlay" aria-hidden="true" />
-
       <section className="login-shell">
         <div className="login-card">
-          {/* Columna izquierda: branding / info */}
           <div className="login-hero">
             <img src={logo} alt="Logo AbejaNet" className="login-logo" />
-            <h1 className="login-title">
-              AbejaNet<span> Dashboard</span>
-            </h1>
-            <p className="login-subtitle">
-              Monitoreo inteligente de colmenas, en tiempo real.
-            </p>
-
+            <h1 className="login-title">AbejaNet<span> Dashboard</span></h1>
+            <p className="login-subtitle">Monitoreo inteligente de colmenas en local.</p>
             <ul className="login-bullets">
-              <li>
-                <i className="fas fa-wave-square" />
-                Tendencias de peso y ambiente por colmena.
-              </li>
-              <li>
-                <i className="fas fa-bell" />
-                Alertas tempranas ante cambios bruscos.
-              </li>
-              <li>
-                <i className="fas fa-cloud-download-alt" />
-                Reportes descargables para tu operación.
-              </li>
+              <li><i className="fas fa-wave-square" /> Tendencias de peso y ambiente.</li>
+              <li><i className="fas fa-bell" /> Alertas tempranas activas.</li>
             </ul>
-
             <div className="login-meta">
-              <span className="pill-meta">
-                <i className="fas fa-shield-alt" /> Datos protegidos
-              </span>
-              <span className="pill-meta">
-                <i className="fas fa-wifi" /> Acceso desde cualquier lugar
-              </span>
+              <span className="pill-meta"><i className="fas fa-shield-alt" /> Base de Datos PostgreSQL Local</span>
             </div>
           </div>
 
-          {/* Columna derecha: formulario */}
           <div className="login-panel">
             <header className="panel-head">
               <h2>Inicia sesión</h2>
-              <p>Ingresa tus credenciales para acceder al panel.</p>
+              <p>Credenciales locales de AbejaNet</p>
             </header>
 
             <form onSubmit={handleSubmit} className="form" noValidate>
-              {/* Correo */}
               <div className="field">
-                <label htmlFor="correo" className="label">
-                  Correo electrónico
-                </label>
+                <label htmlFor="correo" className="label">Correo electrónico</label>
                 <div className="input-wrapper">
                   <i className="fas fa-envelope icon" aria-hidden="true" />
                   <input
                     id="correo"
                     type="email"
-                    inputMode="email"
-                    autoComplete="email"
                     className="input"
-                    placeholder="tucorreo@ejemplo.com"
+                    placeholder="admin@abejanet.com"
                     value={correo}
                     onChange={(e) => setCorreo(e.target.value)}
                     required
-                    aria-invalid={!!error}
                   />
                 </div>
               </div>
 
-              {/* Contraseña */}
               <div className="field">
-                <label htmlFor="contrasena" className="label">
-                  Contraseña
-                </label>
+                <label htmlFor="contrasena" className="label">Contraseña</label>
                 <div className="input-wrapper">
                   <i className="fas fa-lock icon" aria-hidden="true" />
                   <input
                     id="contrasena"
                     type={showPass ? "text" : "password"}
-                    autoComplete="current-password"
                     className="input"
-                    placeholder="••••••••"
+                    placeholder="admin123"
                     value={contrasena}
                     onChange={(e) => setContrasena(e.target.value)}
                     required
-                    minLength={6}
-                    aria-invalid={!!error}
                   />
                   <button
                     type="button"
                     className="toggle-pass"
                     onClick={() => setShowPass((v) => !v)}
-                    aria-label={
-                      showPass ? "Ocultar contraseña" : "Mostrar contraseña"
-                    }
                   >
-                    <i
-                      className={`fas ${
-                        showPass ? "fa-eye-slash" : "fa-eye"
-                      }`}
-                    />
+                    <i className={`fas ${showPass ? "fa-eye-slash" : "fa-eye"}`} />
                   </button>
                 </div>
               </div>
 
-              {/* Opciones */}
               <div className="row-between">
                 <label className="remember">
                   <input
@@ -167,49 +124,17 @@ function LoginPage() {
                     checked={remember}
                     onChange={(e) => setRemember(e.target.checked)}
                   />
-                  <span>Recuérdame en este equipo</span>
+                  <span>Recordarme</span>
                 </label>
-
-                <button
-                  type="button"
-                  className="link-btn"
-                  onClick={() => alert("Recuperación pendiente de implementar")}
-                >
-                  ¿Olvidaste tu contraseña?
-                </button>
               </div>
 
-              {/* Error */}
-              {error && (
-                <div className="alert" role="alert">
-                  {error}
-                </div>
-              )}
+              {error && <div className="alert" role="alert">{error}</div>}
 
-              {/* Botón */}
-              <button
-                type="submit"
-                className="btn"
-                disabled={loading}
-                aria-busy={loading}
-              >
-                {loading ? (
-                  <span className="spinner" aria-hidden="true" />
-                ) : (
-                  <i className="fas fa-sign-in-alt" aria-hidden="true" />
-                )}
-                <span className="btn-text">
-                  {loading ? "Ingresando..." : "Entrar al panel"}
-                </span>
+              <button type="submit" className="btn" disabled={loading}>
+                {loading ? <span className="spinner" /> : <i className="fas fa-sign-in-alt" />}
+                <span className="btn-text">{loading ? "Entrando..." : "Entrar al panel"}</span>
               </button>
             </form>
-
-            <footer className="footer">
-              <p className="mini">
-                © {new Date().getFullYear()} AbejaNet · Salud para tus colmenas
-                🐝
-              </p>
-            </footer>
           </div>
         </div>
       </section>

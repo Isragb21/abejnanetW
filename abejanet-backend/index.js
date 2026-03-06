@@ -1,56 +1,89 @@
-const express = require("express");
-const cors = require("cors");
-require("dotenv").config();
+const express = require("express"); // Cambio: de import a require
+const pool = require("./db");    // Cambio: de import a require
 
-const app = express();
-app.use(cors());
-app.use(express.json());
+const router = express.Router();
 
-/* ===========================
-   Health-check (para UptimeRobot / Render)
+/* ============================
+   OBTENER TODOS LOS APIARIOS
 =========================== */
-app.get("/api/health", (req, res) => {
-  res.json({
-    ok: true,
-    message: "AbejaNet backend funcionando 🐝",
-    timestamp: new Date().toISOString(),
-  });
+router.get("/", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM apiarios ORDER BY id DESC");
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error al obtener apiarios:", error);
+    res.status(500).json({ error: "Error al obtener apiarios" });
+  }
 });
 
-// 🔐 Rutas de autenticación
-const authRoutes = require("./routes/auth");
-app.use("/api", authRoutes);
+/* ============================
+   CREAR APIARIO
+=========================== */
+router.post("/", async (req, res) => {
+  try {
+    const { nombre, descripcion_general, direccion_o_coordenadas, creado_por_usuario_id } = req.body;
 
-// 🐝 Rutas de colmenas
-const colmenasRoutes = require("./routes/colmenas");
-app.use("/api", colmenasRoutes);
+    const nameCheck = await pool.query(
+      "SELECT id FROM apiarios WHERE nombre = $1 LIMIT 1",
+      [nombre]
+    );
 
-// 📈 Rutas de lecturas
-const lecturasRoutes = require("./routes/lecturas");
-app.use("/api", lecturasRoutes);
+    if (nameCheck.rows.length > 0) {
+      return res.status(409).json({ error: "Ese nombre ya existe" });
+    }
 
+    const result = await pool.query(
+      `INSERT INTO apiarios 
+      (nombre, descripcion_general, direccion_o_coordenadas, creado_por_usuario_id)
+      VALUES ($1, $2, $3, $4)
+      RETURNING *`,
+      [nombre, descripcion_general, direccion_o_coordenadas, creado_por_usuario_id || null]
+    );
 
-const usuariosRoutes = require("./routes/usuarios");
-app.use("/api", usuariosRoutes);
-
-// 👤 CRUD DE USUARIOS
-const crudUsuRoutes = require("./routes/crud_usu");
-app.use("/api", crudUsuRoutes);
-
-// 📡 Rutas de sensores
-const sensoresRoutes = require("./routes/sensores");
-app.use("/api", sensoresRoutes);
-
-// 📍 Rutas de apiarios
-const apiariosRoutes = require("./routes/apiarios");
-app.use("/api", apiariosRoutes);
-
-// 📊 Rutas de reportes
-const reportesRouter = require("./routes/reportes");
-app.use("/api/reportes", reportesRouter);
-
-// ✅ Iniciar servidor
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-  console.log(`Servidor backend escuchando en el puerto:${PORT}`);
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error("Error al crear apiario:", error);
+    res.status(500).json({ error: "Error al crear apiario" });
+  }
 });
+
+/* ============================
+   ACTUALIZAR APIARIO
+=========================== */
+router.put("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nombre, descripcion_general, direccion_o_coordenadas } = req.body;
+
+    const result = await pool.query(
+      `UPDATE apiarios SET 
+        nombre = $1,
+        descripcion_general = $2,
+        direccion_o_coordenadas = $3
+       WHERE id = $4
+       RETURNING *`,
+      [nombre, descripcion_general, direccion_o_coordenadas, id]
+    );
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error("Error al actualizar apiario:", error);
+    res.status(500).json({ error: "Error al actualizar apiario" });
+  }
+});
+
+/* ============================
+   ELIMINAR APIARIO
+=========================== */
+router.delete("/:id", async (req, res) => {
+  try {
+    await pool.query("DELETE FROM apiarios WHERE id = $1", [req.params.id]);
+    res.json({ message: "Apiario eliminado" });
+  } catch (error) {
+    console.error("Error al eliminar apiario:", error);
+    res.status(500).json({ error: "Error al eliminar apiario" });
+  }
+});
+
+// Cambio: de export default a module.exports
+module.exports = router;

@@ -1,7 +1,7 @@
-// src/pages/ColmenaDetallePage.js
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useParams, Link, useLocation } from "react-router-dom";
+import API_BASE_URL from "../api"; // 👈 Importamos la URL centralizada
 
 import {
   LineChart,
@@ -30,63 +30,20 @@ import logo from "../assets/abeja_logo.png";
 /* ====== Iconos del menú ====== */
 function BeeIcon(props) {
   return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-hidden="true"
-      {...props}
-    >
-      <path
-        d="M12 8.5c2.2 0 4 1.8 4 4s-1.8 4-4 4-4-1.8-4-4 1.8-4 4-4Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
-      <path
-        d="M6 6l3 3M18 6l-3 3"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-      <path
-        d="M12 4v3"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-      <path
-        d="M5 13h14"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-      <path
-        d="M7.5 18.5C9 20 10.5 20.5 12 20.5s3-.5 4.5-2"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true" {...props}>
+      <path d="M12 8.5c2.2 0 4 1.8 4 4s-1.8 4-4 4-4-1.8-4-4 1.8-4 4-4Z" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M6 6l3 3M18 6l-3 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M12 4v3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M5 13h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M7.5 18.5C9 20 10.5 20.5 12 20.5s3-.5 4.5-2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
     </svg>
   );
 }
 
 function CloseIcon(props) {
   return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-hidden="true"
-      {...props}
-    >
-      <path
-        d="M6 6l12 12M18 6L6 18"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true" {...props}>
+      <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
     </svg>
   );
 }
@@ -119,47 +76,28 @@ function MiniKpi({ icon, label, value, unit }) {
 }
 
 function KpiCard({ peso, delta, temp, hum, lluvia, date }) {
-  const cls =
-    delta > 0 ? "delta positivo" : delta < 0 ? "delta negativo" : "delta neutro";
+  const cls = delta > 0 ? "delta positivo" : delta < 0 ? "delta negativo" : "delta neutro";
   const sign = delta > 0 ? "▲" : delta < 0 ? "▼" : "•";
 
   return (
     <div className="kpi-group">
       <div className="kpi-card">
-        <div className="kpi-icon">
-          <FaWeight />
-        </div>
+        <div className="kpi-icon"><FaWeight /></div>
         <div className="kpi-body">
           <span className="kpi-label">Peso actual</span>
-          <span className="kpi-value">
-            {typeof peso === "number" ? `${peso.toFixed(2)} kg` : "—"}
-          </span>
-          <span className={cls}>
-            {typeof delta === "number"
-              ? `${sign} ${Math.abs(delta).toFixed(2)} kg`
-              : "—"}
-          </span>
+          <span className="kpi-value">{typeof peso === "number" ? `${peso.toFixed(2)} kg` : "—"}</span>
+          <span className={cls}>{typeof delta === "number" ? `${sign} ${Math.abs(delta).toFixed(2)} kg` : "—"}</span>
           {date && <span className="kpi-date">{date}</span>}
         </div>
       </div>
-
       <div className="mini-kpi-row">
-        <MiniKpi
-          icon={<FaThermometerHalf />}
-          label="Temperatura"
-          value={temp}
-          unit="°C"
-        />
+        <MiniKpi icon={<FaThermometerHalf />} label="Temperatura" value={temp} unit="°C" />
         <MiniKpi icon={<FaTint />} label="Humedad" value={hum} unit="%" />
         <div className="mini-kpi">
-          <div className="mini-icon">
-            <FaCloudRain />
-          </div>
+          <div className="mini-icon"><FaCloudRain /></div>
           <div className="mini-data">
             <span className="mini-label">Lluvia</span>
-            <span className="mini-value">
-              {lluvia === 1 ? "🌧️ Sí" : lluvia === 0 ? "☀️ No" : "—"}
-            </span>
+            <span className="mini-value">{lluvia === 1 ? "🌧️ Sí" : lluvia === 0 ? "☀️ No" : "—"}</span>
           </div>
         </div>
       </div>
@@ -193,10 +131,7 @@ export default function ColmenaDetallePage() {
   const { id } = useParams();
   const location = useLocation();
 
-  // Drawer
   const [open, setOpen] = useState(false);
-
-  // Datos
   const [colmena, setColmena] = useState(null);
   const [lecturas, setLecturas] = useState([]);
   const [pesoActual, setPesoActual] = useState(null);
@@ -208,7 +143,6 @@ export default function ColmenaDetallePage() {
   const [fail, setFail] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Usuario (chip)
   const usuario = JSON.parse(localStorage.getItem("usuario"));
   const email = usuario?.correo_electronico || "Invitado";
   const initials = (email || "U").slice(0, 2).toUpperCase();
@@ -225,10 +159,9 @@ export default function ColmenaDetallePage() {
     setLoading(true);
     setFail(false);
 
+    // ✅ Ahora usa la URL dinámica de localhost:4000
     axios
-      .get(
-        `https://abejanet-backend-cplf.onrender.com/api/colmenas/${id}/detalle`
-      )
+      .get(`${API_BASE_URL}/colmenas/${id}/detalle`)
       .then((res) => {
         setColmena(res.data.colmena);
 
@@ -251,10 +184,7 @@ export default function ColmenaDetallePage() {
         setLluviaActual(ultima?.lluvia ?? null);
         setUltimaFecha(ultima?.fecha ?? null);
 
-        if (
-          typeof ultima?.peso === "number" &&
-          typeof penultima?.peso === "number"
-        ) {
+        if (typeof ultima?.peso === "number" && typeof penultima?.peso === "number") {
           setVariacion(ultima.peso - penultima.peso);
         } else {
           setVariacion(null);
@@ -275,34 +205,25 @@ export default function ColmenaDetallePage() {
       minute: "2-digit",
     });
 
-  const ultimaFechaFmt = useMemo(
-    () => (ultimaFecha ? formatFecha(ultimaFecha) : null),
-    [ultimaFecha]
-  );
+  const ultimaFechaFmt = useMemo(() => (ultimaFecha ? formatFecha(ultimaFecha) : null), [ultimaFecha]);
 
   return (
     <div className={`dash-root ${open ? "drawer-open" : ""}`}>
-      {/* TOPBAR */}
       <header className="topbar">
-        <button
-          className="icon-btn"
-          aria-label={open ? "Cerrar menú" : "Abrir menú"}
-          onClick={() => setOpen(!open)}
-        >
+        <button className="icon-btn" onClick={() => setOpen(!open)}>
           {open ? <CloseIcon /> : <BeeIcon />}
         </button>
         <div className="brand">
           <img src={logo} alt="AbejaNet" />
           <span className="brand-name">AbejaNet</span>
         </div>
-        <div className="user-chip" title={email}>
+        <div className="user-chip">
           <span className="user-initials">{initials}</span>
           <span className="user-mail">{email}</span>
         </div>
       </header>
 
-      {/* DRAWER */}
-      <aside className="drawer" role="navigation" aria-label="Menú principal">
+      <aside className="drawer">
         <div className="drawer-head">
           <img src={logo} alt="AbejaNet" />
           <strong>AbejaNet</strong>
@@ -310,69 +231,33 @@ export default function ColmenaDetallePage() {
         <ul className="drawer-links">
           {navItems.map(({ to, label }) => (
             <li key={to}>
-              <Link
-                to={to}
-                className={location.pathname === to ? "active" : ""}
-                onClick={() => setOpen(false)}
-              >
+              <Link to={to} className={location.pathname === to ? "active" : ""} onClick={() => setOpen(false)}>
                 {label}
               </Link>
             </li>
           ))}
         </ul>
-        <div className="drawer-footer">
-          <small>{email}</small>
-        </div>
       </aside>
 
-      <button
-        className="overlay"
-        aria-label="Cerrar menú"
-        onClick={() => setOpen(false)}
-      />
+      <button className="overlay" onClick={() => setOpen(false)} />
 
-      {/* CONTENIDO */}
       <main className="content">
         <div className="detalle-colmena-page">
-          {/* Encabezado / migas */}
           <div className="page-head">
             <div className="crumbs">
-              <Link to="/colmenas" className="crumb-link">
-                ← Volver a Colmenas
-              </Link>
-              {colmena?.nombre && (
-                <span className="crumb-current">{colmena.nombre}</span>
-              )}
+              <Link to="/colmenas" className="crumb-link">← Volver a Colmenas</Link>
+              {colmena?.nombre && <span className="crumb-current">{colmena.nombre}</span>}
             </div>
-            {colmena?.apiario && (
-              <span className="badge-apiario-head">📍 {colmena.apiario}</span>
-            )}
+            {colmena?.apiario && <span className="badge-apiario-head">📍 {colmena.apiario}</span>}
           </div>
 
-          {/* Chips info colmena/apiario */}
           <div className="info-grid">
-            <InfoChip
-              icon={<FaBalanceScale />}
-              title="Colmena"
-              value={colmena?.nombre}
-            />
-            <InfoChip
-              icon={<FaMapMarkerAlt />}
-              title="Apiario"
-              value={colmena?.apiario}
-            />
+            <InfoChip icon={<FaBalanceScale />} title="Colmena" value={colmena?.nombre} />
+            <InfoChip icon={<FaMapMarkerAlt />} title="Apiario" value={colmena?.apiario} />
           </div>
 
-          {/* Bloque principal: KPI + gráficas */}
           <section className="reading-slab">
-            <KpiCard
-              peso={pesoActual}
-              delta={variacion}
-              temp={tempActual}
-              hum={humActual}
-              lluvia={lluviaActual}
-              date={ultimaFechaFmt}
-            />
+            <KpiCard peso={pesoActual} delta={variacion} temp={tempActual} hum={humActual} lluvia={lluviaActual} date={ultimaFechaFmt} />
 
             <div className="charts-grid">
               <Panel title="Temperatura" icon={<FaChartLine />}>
@@ -380,27 +265,14 @@ export default function ColmenaDetallePage() {
                   <ResponsiveContainer width="100%" height={260}>
                     <LineChart data={lecturas}>
                       <CartesianGrid strokeDasharray="3 3" opacity={0.25} />
-                      <XAxis
-                        dataKey="fecha"
-                        type="number"
-                        tickFormatter={formatFecha}
-                        domain={["auto", "auto"]}
-                      />
+                      <XAxis dataKey="fecha" type="number" tickFormatter={formatFecha} domain={["auto", "auto"]} />
                       <YAxis />
                       <Tooltip labelFormatter={formatFecha} />
                       <Legend />
-                      <Line
-                        type="monotone"
-                        dataKey="temperatura"
-                        name="Temperatura (°C)"
-                        dot={false}
-                        strokeWidth={2}
-                      />
+                      <Line type="monotone" dataKey="temperatura" name="Temperatura (°C)" dot={false} strokeWidth={2} />
                     </LineChart>
                   </ResponsiveContainer>
-                ) : (
-                  <EmptyBox>Sin lecturas disponibles.</EmptyBox>
-                )}
+                ) : <EmptyBox>Sin lecturas disponibles.</EmptyBox>}
               </Panel>
 
               <Panel title="Humedad" icon={<FaChartLine />}>
@@ -408,27 +280,14 @@ export default function ColmenaDetallePage() {
                   <ResponsiveContainer width="100%" height={260}>
                     <LineChart data={lecturas}>
                       <CartesianGrid strokeDasharray="3 3" opacity={0.25} />
-                      <XAxis
-                        dataKey="fecha"
-                        type="number"
-                        tickFormatter={formatFecha}
-                        domain={["auto", "auto"]}
-                      />
+                      <XAxis dataKey="fecha" type="number" tickFormatter={formatFecha} domain={["auto", "auto"]} />
                       <YAxis />
                       <Tooltip labelFormatter={formatFecha} />
                       <Legend />
-                      <Line
-                        type="monotone"
-                        dataKey="humedad"
-                        name="Humedad (%)"
-                        dot={false}
-                        strokeWidth={2}
-                      />
+                      <Line type="monotone" dataKey="humedad" name="Humedad (%)" dot={false} strokeWidth={2} />
                     </LineChart>
                   </ResponsiveContainer>
-                ) : (
-                  <EmptyBox>Sin lecturas disponibles.</EmptyBox>
-                )}
+                ) : <EmptyBox>Sin lecturas disponibles.</EmptyBox>}
               </Panel>
 
               <Panel title="Peso" icon={<FaChartLine />}>
@@ -436,39 +295,23 @@ export default function ColmenaDetallePage() {
                   <ResponsiveContainer width="100%" height={260}>
                     <LineChart data={lecturas}>
                       <CartesianGrid strokeDasharray="3 3" opacity={0.25} />
-                      <XAxis
-                        dataKey="fecha"
-                        type="number"
-                        tickFormatter={formatFecha}
-                        domain={["auto", "auto"]}
-                      />
+                      <XAxis dataKey="fecha" type="number" tickFormatter={formatFecha} domain={["auto", "auto"]} />
                       <YAxis />
                       <Tooltip labelFormatter={formatFecha} />
                       <Legend />
-                      <Line
-                        type="monotone"
-                        dataKey="peso"
-                        name="Peso (kg)"
-                        dot={false}
-                        strokeWidth={2}
-                      />
+                      <Line type="monotone" dataKey="peso" name="Peso (kg)" dot={false} strokeWidth={2} />
                     </LineChart>
                   </ResponsiveContainer>
-                ) : (
-                  <EmptyBox>Sin lecturas disponibles.</EmptyBox>
-                )}
+                ) : <EmptyBox>Sin lecturas disponibles.</EmptyBox>}
               </Panel>
             </div>
           </section>
 
           {loading && <div className="loading-note">Cargando datos…</div>}
           {fail && (
-            <div className="empty-box error" style={{ marginTop: 12 }}>
+            <div className="empty-box error">
               <h4>Ocurrió un problema</h4>
-              <p>
-                Verifica la API:{" "}
-                <code>GET /api/colmenas/{id}/detalle</code>
-              </p>
+              <p>Verifica la API local: <code>GET {API_BASE_URL}/colmenas/{id}/detalle</code></p>
             </div>
           )}
         </div>

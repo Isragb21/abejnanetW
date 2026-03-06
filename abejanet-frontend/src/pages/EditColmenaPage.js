@@ -1,7 +1,7 @@
-// src/pages/EditColmenaPage.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import "./CreateColmenaPage.css"; // reutilizamos el mismo estilo del form de creación
+import API_BASE_URL from "../api"; // 👈 Importamos la URL centralizada
+import "./CreateColmenaPage.css"; 
 
 export default function EditColmenaPage() {
   const { id } = useParams();
@@ -32,21 +32,22 @@ export default function EditColmenaPage() {
       const r = await fetch(url);
       const ct = r.headers.get("content-type") || "";
       const raw = await r.text();
+      
       if (!ct.includes("application/json")) {
-        // El backend regresó HTML (index.html o página de error)
         throw new Error(
-          `La URL ${url} devolvió contenido no-JSON. ` +
-            `Revisa que el endpoint exista y que el catch-all de React esté al final.`
+          `Error: El servidor en ${url} no respondió con JSON. Verifica que el backend local esté corriendo.`
         );
       }
+      
       const data = JSON.parse(raw);
       if (!r.ok) throw new Error(data?.error || "Error en la respuesta del servidor");
       return data;
     };
 
+    // ✅ Ahora usa la URL dinámica de localhost:4000
     Promise.all([
-      fetchJsonSafe("https://abejanet-backend-cplf.onrender.com/api/apiarios").catch(() => []),
-      fetchJsonSafe(`https://abejanet-backend-cplf.onrender.com/api/colmenas/${id}`),
+      fetchJsonSafe(`${API_BASE_URL}/apiarios`).catch(() => []),
+      fetchJsonSafe(`${API_BASE_URL}/colmenas/${id}`),
     ])
       .then(([apiariosResp, colmena]) => {
         if (!alive) return;
@@ -96,20 +97,17 @@ export default function EditColmenaPage() {
 
     try {
       setSaving(true);
-      const res = await fetch(
-        `https://abejanet-backend-cplf.onrender.com/api/colmenas/${id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            apiario_id: form.apiario_id,
-            nombre: form.nombre,
-            descripcion_especifica: form.descripcion_especifica,
-          }),
-        }
-      );
+      // ✅ Ahora usa la URL dinámica de localhost:4000
+      const res = await fetch(`${API_BASE_URL}/colmenas/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          apiario_id: form.apiario_id,
+          nombre: form.nombre,
+          descripcion_especifica: form.descripcion_especifica,
+        }),
+      });
 
-      // misma defensa contra HTML en la respuesta
       const ct = res.headers.get("content-type") || "";
       const raw = await res.text();
       const data = ct.includes("application/json")
@@ -120,7 +118,7 @@ export default function EditColmenaPage() {
         throw new Error(data?.error || "No se pudo guardar");
       }
 
-      setSuccessMsg("✅ Cambios guardados");
+      setSuccessMsg("✅ Cambios guardados correctamente");
       setTimeout(() => navigate("/colmenas"), 1000);
     } catch (err) {
       setErrorMsg(err.message || "Error del servidor");
@@ -129,7 +127,6 @@ export default function EditColmenaPage() {
     }
   };
 
-  // ======= ESTADO LOADING CON MISMO DISEÑO =======
   if (loading) {
     return (
       <div className="create-colmena-root">
@@ -137,60 +134,35 @@ export default function EditColmenaPage() {
           <header className="create-colmena-header">
             <div>
               <h2>✏️ Editar colmena</h2>
-              <p className="create-colmena-sub">
-                Cargando información de la colmena seleccionada…
-              </p>
+              <p className="create-colmena-sub">Cargando información local…</p>
             </div>
-            <Link to="/colmenas" className="crumb-link">
-              ← Volver a colmenas
-            </Link>
+            <Link to="/colmenas" className="crumb-link">← Volver</Link>
           </header>
-
           <div className="create-colmena-layout">
             <div className="create-colmena-form-card">
-              <div className="alert">
-                <p>Cargando datos…</p>
-              </div>
+              <div className="alert"><p>Cargando datos desde la base de datos local…</p></div>
             </div>
-
-            <aside className="create-colmena-aside">
-              <h3>🐝 Editando colmena</h3>
-              <p className="hint">
-                En unos segundos podrás modificar el apiario, nombre y descripción
-                de esta colmena sin perder su historial de lecturas.
-              </p>
-            </aside>
           </div>
         </div>
       </div>
     );
   }
 
-  // ======= VISTA PRINCIPAL =======
   return (
     <div className="create-colmena-root">
       <div className="create-colmena-shell">
-        {/* Encabezado */}
         <header className="create-colmena-header">
           <div>
             <h2>✏️ Editar colmena #{id}</h2>
             <p className="create-colmena-sub">
-              Actualiza el nombre, apiario o notas de esta colmena. Los datos
-              históricos de sensores se conservan.
+              Actualiza el nombre, apiario o notas. Los datos históricos se conservan en PostgreSQL local.
             </p>
           </div>
-          <Link to="/colmenas" className="crumb-link">
-            ← Volver a colmenas
-          </Link>
+          <Link to="/colmenas" className="crumb-link">← Volver a colmenas</Link>
         </header>
 
         <div className="create-colmena-layout">
-          {/* Tarjeta principal del formulario */}
-          <form
-            onSubmit={handleSubmit}
-            className="create-colmena-form-card"
-          >
-            {/* Apiario */}
+          <form onSubmit={handleSubmit} className="create-colmena-form-card">
             <label className="form-field">
               <span>Apiario *</span>
               <select
@@ -202,14 +174,11 @@ export default function EditColmenaPage() {
               >
                 <option value="">Selecciona un apiario…</option>
                 {apiarios.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.nombre}
-                  </option>
+                  <option key={a.id} value={a.id}>{a.nombre}</option>
                 ))}
               </select>
             </label>
 
-            {/* Nombre */}
             <label className="form-field">
               <span>Nombre de la colmena *</span>
               <input
@@ -222,7 +191,6 @@ export default function EditColmenaPage() {
               />
             </label>
 
-            {/* Descripción */}
             <label className="form-field">
               <span>Descripción (opcional)</span>
               <textarea
@@ -234,57 +202,22 @@ export default function EditColmenaPage() {
               />
             </label>
 
-            {/* Mensajes */}
-            {errorMsg && (
-              <div className="alert error">
-                <p>{errorMsg}</p>
-              </div>
-            )}
-            {successMsg && (
-              <div className="alert success">
-                <p>{successMsg}</p>
-              </div>
-            )}
+            {errorMsg && <div className="alert error"><p>{errorMsg}</p></div>}
+            {successMsg && <div className="alert success"><p>{successMsg}</p></div>}
 
-            {/* Acciones */}
             <div className="form-actions" style={{ gap: 10 }}>
-              <Link
-                to="/colmenas"
-                className="crumb-link"
-                style={{ padding: "8px 12px" }}
-              >
-                Cancelar
-              </Link>
+              <Link to="/colmenas" className="crumb-link" style={{ padding: "8px 12px" }}>Cancelar</Link>
               <button type="submit" disabled={saving || !isValid}>
                 {saving ? "Guardando..." : "Guardar cambios"}
               </button>
             </div>
           </form>
 
-          {/* Columna derecha con info / tips */}
           <aside className="create-colmena-aside">
-            <h3>🔁 Mantén tus colmenas organizadas</h3>
-            <ul>
-              <li>
-                Aprovecha este formulario para corregir nombres poco claros
-                o mover la colmena al apiario correcto.
-              </li>
-              <li>
-                La descripción puede usarse como bitácora rápida:
-                <span className="hint">
-                  cambio de reina, división, alimentación, tratamientos, etc.
-                </span>
-              </li>
-              <li>
-                Los reportes usarán esta información para agrupar mejor
-                peso, alertas y lecturas por apiario.
-              </li>
-            </ul>
+            <h3>🔁 Organización</h3>
+            <p>Puedes mover esta colmena de apiario sin perder sus lecturas de sensores.</p>
             <div className="create-colmena-meta">
-              <p>
-                Después de guardar, podrás ver los cambios reflejados en la
-                vista de colmenas y en los reportes operativos.
-              </p>
+              <p>Los cambios se verán reflejados inmediatamente en el dashboard local.</p>
             </div>
           </aside>
         </div>

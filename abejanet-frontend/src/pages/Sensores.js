@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../api"; // 👈 Importamos la URL centralizada
 import "./Sensores.css";
 
 export default function Sensores() {
@@ -31,35 +32,33 @@ export default function Sensores() {
     const queryString = params.toString();
 
     setLoading(true);
-    return fetch(`https://abejanet-backend-cplf.onrender.com/api/sensores?${queryString}`)
+    // ✅ Ahora usa la URL dinámica de localhost:4000
+    return fetch(`${API_BASE_URL}/sensores?${queryString}`)
       .then((res) => res.json())
       .then((data) => {
         setSensores(data);
       })
       .catch((err) => {
         console.error("Error al cargar sensores:", err);
-        throw err;
       })
       .finally(() => setLoading(false));
   };
 
   // Cargar colmenas
   const cargarColmenas = () => {
-    return fetch("https://abejanet-backend-cplf.onrender.com/api/colmenas")
+    // ✅ Ahora usa la URL dinámica de localhost:4000
+    return fetch(`${API_BASE_URL}/colmenas`)
       .then((res) => res.json())
       .then((data) => setColmenas(data))
       .catch((err) => {
         console.error("Error al cargar colmenas:", err);
-        throw err;
       });
   };
 
-  // Colmenas solo una vez
   useEffect(() => {
     cargarColmenas();
   }, []);
 
-  // Sensores cada vez que cambian filtros
   useEffect(() => {
     cargarSensores();
   }, [filtroColmena, filtroMac]);
@@ -85,8 +84,8 @@ export default function Sensores() {
 
     const method = editing ? "PUT" : "POST";
     const url = editing
-      ? `https://abejanet-backend-cplf.onrender.com/api/sensores/${editing}`
-      : "https://abejanet-backend-cplf.onrender.com/api/sensores";
+      ? `${API_BASE_URL}/sensores/${editing}`
+      : `${API_BASE_URL}/sensores`;
 
     fetch(url, {
       method,
@@ -97,7 +96,7 @@ export default function Sensores() {
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
           throw new Error(
-            errorData.error || `Error ${res.status}: No se pudo completar la operación`
+            errorData.error || `Error ${res.status}: Operación fallida`
           );
         }
         return res.json();
@@ -105,9 +104,9 @@ export default function Sensores() {
       .then(() => {
         cargarSensores();
         resetForm();
+        alert(editing ? "Sensor actualizado" : "Sensor agregado");
       })
       .catch((err) => {
-        console.error("Error al guardar sensor:", err.message);
         alert(err.message);
       });
   };
@@ -128,7 +127,7 @@ export default function Sensores() {
 
   const handleDelete = (id) => {
     if (window.confirm("¿Seguro que deseas eliminar este sensor?")) {
-      fetch(`https://abejanet-backend-cplf.onrender.com/api/sensores/${id}`, {
+      fetch(`${API_BASE_URL}/sensores/${id}`, {
         method: "DELETE",
       })
         .then((res) => res.json())
@@ -144,204 +143,95 @@ export default function Sensores() {
 
   return (
     <div className="sensores-layout">
-      
-      {/* === SIDEBAR EXACTO IGUAL QUE APIARIOS === */}
       <aside className="sensores-sidebar">
         <div className="sensores-logo" onClick={() => navigate("/dashboard")}>
           <span className="sensores-logo-icon">🐝</span>
           <span className="sensores-logo-text">AbejaNet</span>
         </div>
-
         <nav className="sensores-nav">
-
-          <button className="sensores-nav-item" onClick={() => navigate("/dashboard")}>
-            <span>🏠</span> <span>Inicio</span>
-          </button>
-
-          <button className="sensores-nav-item" onClick={() => navigate("/apiarios")}>
-            <span>🏷️</span> <span>Apiarios</span>
-          </button>
-
-          <button className="sensores-nav-item" onClick={() => navigate("/colmenas")}>
-            <span>🍯</span> <span>Colmenas</span>
-          </button>
-
-          <button className="sensores-nav-item sensores-nav-item-active" onClick={() => navigate("/sensores")}>
-            <span>📡</span> <span>Sensores</span>
-          </button>
-
-          <button className="sensores-nav-item" onClick={() => navigate("/usuarios")}>
-            <span>👥</span> <span>Usuarios</span>
-          </button>
-
-          <button className="sensores-nav-item" onClick={() => navigate("/cuenta")}>
-            <span>👤</span> <span>Cuenta</span>
-          </button>
-
+          <button className="sensores-nav-item" onClick={() => navigate("/dashboard")}>🏠 Inicio</button>
+          <button className="sensores-nav-item" onClick={() => navigate("/apiarios")}>🏷️ Apiarios</button>
+          <button className="sensores-nav-item" onClick={() => navigate("/colmenas")}>🍯 Colmenas</button>
+          <button className="sensores-nav-item sensores-nav-item-active" onClick={() => navigate("/sensores")}>📡 Sensores</button>
+          <button className="sensores-nav-item" onClick={() => navigate("/usuarios")}>👥 Usuarios</button>
+          <button className="sensores-nav-item" onClick={() => navigate("/cuenta")}>👤 Cuenta</button>
         </nav>
       </aside>
 
-      {/* === CONTENIDO PRINCIPAL === */}
       <main className="sensores-main">
-
         <header className="sensores-header">
           <div>
             <p className="sensores-badge">Panel de control</p>
             <h1>Gestión de Sensores</h1>
-            <p className="sensores-subtitle">
-              Administra los sensores instalados en tus colmenas, su estado y fecha de instalación.
-            </p>
+            <p className="sensores-subtitle">Administra los dispositivos instalados en tus colmenas locales.</p>
           </div>
           <div className="sensores-header-resumen">
-            <span className="sensores-resumen-pill">
-              Total: <strong>{sensores.length}</strong>
-            </span>
+            <span className="sensores-resumen-pill">Total: <strong>{sensores.length}</strong></span>
           </div>
         </header>
 
-        {/* Filtros + Formulario */}
         <section className="sensores-card">
           <div className="form-sensor-filtros">
-            <select
-              name="filtro_colmena"
-              value={filtroColmena}
-              onChange={(e) => setFiltroColmena(e.target.value)}
-            >
+            <select name="filtro_colmena" value={filtroColmena} onChange={(e) => setFiltroColmena(e.target.value)}>
               <option value="">-- Filtrar por Colmena --</option>
-              {colmenas.map((colmena) => (
-                <option key={colmena.id} value={colmena.id}>
-                  {colmena.nombre}
-                </option>
+              {colmenas.map((col) => (
+                <option key={col.id} value={col.id}>{col.nombre}</option>
               ))}
             </select>
-
-            <input
-              type="text"
-              name="filtro_mac"
-              placeholder="Buscar por MAC Address..."
-              value={filtroMac}
-              onChange={(e) => setFiltroMac(e.target.value)}
-            />
-
-            <button type="button" className="btn-secundario" onClick={limpiarFiltros}>
-              Limpiar filtros
-            </button>
+            <input type="text" placeholder="MAC Address..." value={filtroMac} onChange={(e) => setFiltroMac(e.target.value)} />
+            <button type="button" className="btn-secundario" onClick={limpiarFiltros}>Limpiar</button>
           </div>
 
           <form className="form-sensor" onSubmit={handleSubmit}>
-            <select
-              name="colmena_id"
-              value={formData.colmena_id}
-              onChange={handleChange}
-              required
-            >
+            <select name="colmena_id" value={formData.colmena_id} onChange={handleChange} required>
               <option value="">-- Seleccionar Colmena --</option>
-              {colmenas.map((colmena) => (
-                <option key={colmena.id} value={colmena.id}>
-                  {colmena.nombre}
-                </option>
+              {colmenas.map((col) => (
+                <option key={col.id} value={col.id}>{col.nombre}</option>
               ))}
             </select>
-
-            <input
-              type="text"
-              name="tipo_sensor"
-              placeholder="Tipo de Sensor"
-              value={formData.tipo_sensor}
-              onChange={handleChange}
-              required
-            />
-
-            <select
-              name="estado"
-              value={formData.estado}
-              onChange={handleChange}
-              required
-            >
-              <option value="">-- Seleccionar Estado --</option>
+            <input type="text" name="tipo_sensor" placeholder="Tipo (Peso, Temp, etc)" value={formData.tipo_sensor} onChange={handleChange} required />
+            <select name="estado" value={formData.estado} onChange={handleChange} required>
+              <option value="">-- Estado --</option>
               {estadosDisponibles.map((est) => (
-                <option key={est} value={est}>
-                  {est.charAt(0).toUpperCase() + est.slice(1)}
-                </option>
+                <option key={est} value={est}>{est}</option>
               ))}
             </select>
-
-            <input
-              type="text"
-              name="mac_address"
-              placeholder="MAC Address (Ej: AA:BB:CC:..)"
-              value={formData.mac_address}
-              onChange={handleChange}
-            />
-
-            <input
-              type="date"
-              name="fecha_instalacion"
-              value={formData.fecha_instalacion}
-              onChange={handleChange}
-            />
-
+            <input type="text" name="mac_address" placeholder="MAC Address" value={formData.mac_address} onChange={handleChange} />
+            <input type="date" name="fecha_instalacion" value={formData.fecha_instalacion} onChange={handleChange} />
             <div className="form-sensor-actions">
-              <button type="submit" className="btn-primario">
-                {editing ? "Actualizar Sensor" : "Agregar Sensor"}
-              </button>
-              {editing && (
-                <button type="button" className="btn-secundario" onClick={resetForm}>
-                  Cancelar
-                </button>
-              )}
+              <button type="submit" className="btn-primario">{editing ? "Actualizar" : "Agregar"}</button>
+              {editing && <button type="button" className="btn-secundario" onClick={resetForm}>Cancelar</button>}
             </div>
           </form>
         </section>
 
-        {/* Tabla */}
         <section className="sensores-card">
           {loading ? (
             <div className="cuenta-loading">Cargando sensores...</div>
-          ) : sensores.length === 0 ? (
-            <p className="sensores-empty">No hay sensores que coincidan con los filtros.</p>
           ) : (
             <div className="tabla-wrapper">
               <table className="tabla-sensores">
                 <thead>
                   <tr>
                     <th>Colmena</th>
-                    <th>Tipo de Sensor</th>
-                    <th>MAC Address</th>
+                    <th>Tipo</th>
+                    <th>MAC</th>
                     <th>Estado</th>
-                    <th>Fecha de Instalación</th>
-                    <th>Última Lectura</th>
+                    <th>Instalación</th>
                     <th>Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {sensores.map((sensor) => (
-                    <tr key={sensor.id}>
-                      <td>{sensor.nombre_colmena || sensor.colmena_id}</td>
-                      <td>{sensor.tipo_sensor}</td>
-                      <td>{sensor.mac_address || "N/A"}</td>
-                      <td>
-                        <span className={`estado-pill estado-${sensor.estado}`}>
-                          {sensor.estado}
-                        </span>
-                      </td>
-                      <td>
-                        {sensor.fecha_instalacion
-                          ? new Date(sensor.fecha_instalacion).toLocaleDateString("es-MX")
-                          : "Sin fecha"}
-                      </td>
-                      <td>
-                        {sensor.ultima_lectura_en
-                          ? new Date(sensor.ultima_lectura_en).toLocaleDateString("es-MX")
-                          : "Sin lectura"}
-                      </td>
+                  {sensores.map((s) => (
+                    <tr key={s.id}>
+                      <td>{s.nombre_colmena || s.colmena_id}</td>
+                      <td>{s.tipo_sensor}</td>
+                      <td>{s.mac_address || "N/A"}</td>
+                      <td><span className={`estado-pill estado-${s.estado}`}>{s.estado}</span></td>
+                      <td>{s.fecha_instalacion ? new Date(s.fecha_instalacion).toLocaleDateString() : "-"}</td>
                       <td className="tabla-sensores-actions">
-                        <button className="editar" onClick={() => handleEdit(sensor)}>
-                          ✏️
-                        </button>
-                        <button className="eliminar" onClick={() => handleDelete(sensor.id)}>
-                          🗑️
-                        </button>
+                        <button className="editar" onClick={() => handleEdit(s)}>✏️</button>
+                        <button className="eliminar" onClick={() => handleDelete(s.id)}>🗑️</button>
                       </td>
                     </tr>
                   ))}
@@ -350,7 +240,6 @@ export default function Sensores() {
             </div>
           )}
         </section>
-
       </main>
     </div>
   );

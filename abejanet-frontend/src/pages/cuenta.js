@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../api"; // 👈 Importamos la URL centralizada
 import "./Cuenta.css";
 
 export default function Cuenta() {
@@ -10,17 +11,17 @@ export default function Cuenta() {
 
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("usuario"));
+    
     if (userData?.correo_electronico) {
-      fetch(
-        `https://abejanet-backend-cplf.onrender.com/api/usuarios/${userData.correo_electronico}`
-      )
+      // ✅ Ahora busca al usuario en el backend local por su correo
+      fetch(`${API_BASE_URL}/usuarios/${userData.correo_electronico}`)
         .then((res) => res.json())
         .then((data) => {
           setUsuario(data);
           setFormData(data);
         })
         .catch(() => {
-          // si falla la API, usamos lo que haya en localStorage
+          // Si falla la API local, usamos lo que haya en localStorage como respaldo
           setUsuario(userData);
           setFormData(userData);
         });
@@ -39,24 +40,26 @@ export default function Cuenta() {
       return;
     }
 
-    fetch(
-      `https://abejanet-backend-cplf.onrender.com/api/usuarios/${usuario.id}`,
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      }
-    )
-      .then((res) => res.json())
+    // ✅ Petición PUT al servidor local
+    fetch(`${API_BASE_URL}/usuarios/${usuario.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Error al actualizar");
+        return res.json();
+      })
       .then((data) => {
         setUsuario(data);
         setEditando(false);
+        // Actualizamos el storage para que el nombre cambie en toda la app
         localStorage.setItem("usuario", JSON.stringify(data));
         alert("Perfil actualizado correctamente");
       })
       .catch((err) => {
         console.error("Error:", err);
-        alert("Error al guardar cambios");
+        alert("Error al guardar cambios en el servidor local");
       });
   };
 
@@ -70,7 +73,6 @@ export default function Cuenta() {
   return (
     <div className="cuenta-root">
       <div className="cuenta-card">
-        {/* Flecha de regreso */}
         <div
           className="cuenta-back-icon"
           onClick={() => navigate("/dashboard")}
@@ -79,7 +81,6 @@ export default function Cuenta() {
           ←
         </div>
 
-        {/* Avatar con inicial */}
         <div className="cuenta-avatar">
           {usuario.nombre?.charAt(0).toUpperCase() || "U"}
         </div>
@@ -109,6 +110,7 @@ export default function Cuenta() {
               placeholder="Correo electrónico"
               value={formData.correo_electronico || ""}
               onChange={handleChange}
+              disabled // Normalmente el correo no se edita para evitar conflictos de ID
             />
 
             <div className="cuenta-botones">
