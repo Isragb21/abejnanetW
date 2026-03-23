@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import API_BASE_URL from "../api"; // 👈 Importamos la URL centralizada
-import "./Sensores.css";   
-import "./ApiariosPage.css";   
+import Sidebar from "./Sidebar"; 
+import API_BASE_URL from "../api"; 
+import "./ApiariosPage.css"; // Solo necesitamos este CSS ahora
 
 export default function Apiarios() {
-  const navigate = useNavigate();
-
   const [apiarios, setApiarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
+
+  // Estado para controlar la ventana emergente (Modal)
+  const [showModal, setShowModal] = useState(false);
 
   const [formData, setFormData] = useState({
     nombre: "",
@@ -22,7 +22,7 @@ export default function Apiarios() {
   ============================ */
   const cargarApiarios = () => {
     setLoading(true);
-    fetch(`${API_BASE_URL}/apiarios`) // ✅ Ahora usa localhost:4000
+    fetch(`${API_BASE_URL}/apiarios`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) setApiarios(data);
@@ -41,18 +41,33 @@ export default function Apiarios() {
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const resetForm = () => {
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setEditing(null);
     setFormData({
       nombre: "",
       direccion_o_coordenadas: "",
       descripcion_general: "",
     });
-    setEditing(null);
+  };
+
+  const handleOpenCreate = () => {
+    handleCloseModal();
+    setShowModal(true);
+  };
+
+  const handleEdit = (a) => {
+    setEditing(a.id);
+    setFormData({
+      nombre: a.nombre || "",
+      direccion_o_coordenadas: a.direccion_o_coordenadas || "",
+      descripcion_general: a.descripcion_general || "",
+    });
+    setShowModal(true);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     const method = editing ? "PUT" : "POST";
     const url = editing
       ? `${API_BASE_URL}/apiarios/${editing}`
@@ -72,92 +87,46 @@ export default function Apiarios() {
       })
       .then(() => {
         cargarApiarios();
-        resetForm();
+        handleCloseModal(); // Cerramos el modal al guardar
       })
       .catch((err) => alert(err.message));
   };
 
-  const handleEdit = (a) => {
-    setEditing(a.id);
-    setFormData({
-      nombre: a.nombre || "",
-      direccion_o_coordenadas: a.direccion_o_coordenadas || "",
-      descripcion_general: a.descripcion_general || "",
-    });
-    window.scrollTo(0, 0);
-  };
-
   const handleDelete = (id) => {
-    if (!window.confirm("¿Eliminar apiario?")) return;
+    if (!window.confirm("¿Seguro que deseas eliminar este apiario? Las colmenas asociadas podrían verse afectadas.")) return;
 
-    fetch(`${API_BASE_URL}/apiarios/${id}`, {
-      method: "DELETE",
-    })
+    fetch(`${API_BASE_URL}/apiarios/${id}`, { method: "DELETE" })
       .then(() => cargarApiarios())
       .catch((err) => console.error("Error al eliminar apiario:", err));
   };
 
   return (
-    <div className="sensores-layout">
-      <aside className="sensores-sidebar">
-        <div className="sensores-logo" onClick={() => navigate("/dashboard")}>
-          <span className="sensores-logo-icon">🐝</span>
-          <span className="sensores-logo-text">AbejaNet</span>
-        </div>
-        <nav className="sensores-nav">
-          <button className="sensores-nav-item" onClick={() => navigate("/dashboard")}>
-            <span>🏠</span> <span>Inicio</span>
-          </button>
-          <button className="sensores-nav-item sensores-nav-item-active" onClick={() => navigate("/apiarios")}>
-            <span>🏷️</span> <span>Apiarios</span>
-          </button>
-          <button className="sensores-nav-item" onClick={() => navigate("/colmenas")}>
-            <span>🍯</span> <span>Colmenas</span>
-          </button>
-          <button className="sensores-nav-item" onClick={() => navigate("/sensores")}>
-            <span>📡</span> <span>Sensores</span>
-          </button>
-          <button className="sensores-nav-item" onClick={() => navigate("/usuarios")}>
-            <span>👥</span> <span>Usuarios</span>
-          </button>
-          <button className="sensores-nav-item" onClick={() => navigate("/cuenta")}>
-            <span>👤</span> <span>Cuenta</span>
-          </button>
-        </nav>
-      </aside>
+    <div className="apiarios-layout">
+      
+      {/* Nuestro menú lateral global */}
+      <Sidebar />
 
-      <main className="sensores-main">
-        <header className="sensores-header">
+      <main className="apiarios-main">
+        <header className="apiarios-header">
           <div>
-            <p className="sensores-badge">Panel de control</p>
+            <p className="apiarios-badge">Panel de control</p>
             <h1>Gestión de Apiarios</h1>
-            <p className="sensores-subtitle">Administra los apiarios, su ubicación y descripción general.</p>
+            <p className="apiarios-subtitle">Administra los apiarios, su ubicación y descripción general.</p>
           </div>
-          <div className="sensores-header-resumen">
-            <span className="sensores-resumen-pill">
+          <div className="apiarios-header-resumen">
+            <span className="apiarios-resumen-pill">
               Total: <strong>{apiarios.length}</strong>
             </span>
           </div>
         </header>
 
-        <section className="sensores-card">
-          <form className="form-sensor" onSubmit={handleSubmit}>
-            <input type="text" name="nombre" placeholder="Nombre del Apiario" value={formData.nombre} onChange={handleChange} required />
-            <input type="text" name="direccion_o_coordenadas" placeholder="Dirección o Coordenadas" value={formData.direccion_o_coordenadas} onChange={handleChange} />
-            <textarea name="descripcion_general" placeholder="Descripción General" value={formData.descripcion_general} onChange={handleChange} />
-            <div className="form-sensor-actions">
-              <button type="submit" className="btn-primario">{editing ? "Actualizar" : "Agregar"}</button>
-              {editing && <button type="button" className="btn-secundario" onClick={resetForm}>Cancelar</button>}
-            </div>
-          </form>
-        </section>
-
-        <section className="sensores-card">
+        {/* Tabla principal de Apiarios */}
+        <section className="apiarios-card">
           {loading ? (
-            <div className="cuenta-loading">Cargando...</div>
+            <div className="cuenta-loading">Cargando apiarios...</div>
           ) : (
             <div className="tabla-wrapper">
-              <table className="tabla-sensores">
+              <table className="tabla-apiarios">
                 <thead>
                   <tr>
                     <th>Nombre</th>
@@ -167,22 +136,63 @@ export default function Apiarios() {
                   </tr>
                 </thead>
                 <tbody>
-                  {apiarios.map((a) => (
-                    <tr key={a.id}>
-                      <td>{a.nombre}</td>
-                      <td>{a.direccion_o_coordenadas || "N/A"}</td>
-                      <td>{a.descripcion_general || "Sin descripción"}</td>
-                      <td className="tabla-sensores-actions">
-                        <button className="editar" onClick={() => handleEdit(a)}>✏️</button>
-                        <button className="eliminar" onClick={() => handleDelete(a.id)}>🗑️</button>
-                      </td>
+                  {apiarios.length > 0 ? (
+                    apiarios.map((a) => (
+                      <tr key={a.id}>
+                        <td style={{ fontWeight: "600" }}>{a.nombre}</td>
+                        <td>{a.direccion_o_coordenadas || "N/A"}</td>
+                        <td style={{ color: "#aaa" }}>{a.descripcion_general || "Sin descripción"}</td>
+                        <td className="tabla-apiarios-actions">
+                          <button className="editar" onClick={() => handleEdit(a)}>✏️</button>
+                          <button className="eliminar" onClick={() => handleDelete(a.id)}>🗑️</button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="4" className="apiarios-empty">No hay apiarios registrados.</td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>
           )}
+
+          {/* Botón de Agregar (Abajo de la tabla) */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+            <button className="btn-primario" onClick={handleOpenCreate}>
+              ➕ Agregar Apiario
+            </button>
+          </div>
         </section>
+
+        {/* ==========================================
+            EL MODAL (Ventana Emergente)
+            ========================================== */}
+        {showModal && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <h2>{editing ? "Editar Apiario" : "Nuevo Apiario"}</h2>
+              
+              <form className="form-apiario-modal" onSubmit={handleSubmit}>
+                <label>Nombre del Apiario:</label>
+                <input type="text" name="nombre" placeholder="Ej. Apiario Principal" value={formData.nombre} onChange={handleChange} required />
+
+                <label>Dirección o Coordenadas:</label>
+                <input type="text" name="direccion_o_coordenadas" placeholder="Ej. 19.4326° N, 99.1332° W" value={formData.direccion_o_coordenadas} onChange={handleChange} />
+
+                <label>Descripción General:</label>
+                <textarea name="descripcion_general" placeholder="Detalles sobre el entorno, clima, accesos, etc." value={formData.descripcion_general} onChange={handleChange} />
+
+                <div className="modal-actions">
+                  <button type="button" className="btn-secundario" onClick={handleCloseModal}>Cancelar</button>
+                  <button type="submit" className="btn-primario">{editing ? "Guardar Cambios" : "Crear Apiario"}</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
       </main>
     </div>
   );

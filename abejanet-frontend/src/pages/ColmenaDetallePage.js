@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import { useParams, Link, useLocation } from "react-router-dom";
-import API_BASE_URL from "../api"; // 👈 Importamos la URL centralizada
+import { useParams, Link } from "react-router-dom";
+import API_BASE_URL from "../api";
 
 import {
   LineChart,
@@ -25,28 +25,7 @@ import {
 } from "react-icons/fa";
 
 import "./ColmenaDetallePage.css";
-import logo from "../assets/abeja_logo.png";
-
-/* ====== Iconos del menú ====== */
-function BeeIcon(props) {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true" {...props}>
-      <path d="M12 8.5c2.2 0 4 1.8 4 4s-1.8 4-4 4-4-1.8-4-4 1.8-4 4-4Z" stroke="currentColor" strokeWidth="1.8" />
-      <path d="M6 6l3 3M18 6l-3 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-      <path d="M12 4v3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-      <path d="M5 13h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-      <path d="M7.5 18.5C9 20 10.5 20.5 12 20.5s3-.5 4.5-2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function CloseIcon(props) {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true" {...props}>
-      <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  );
-}
+import "./Sensores.css"; // Fundamental para el layout oscuro
 
 /* ====== Subcomponentes UI ====== */
 function InfoChip({ icon, title, value }) {
@@ -129,9 +108,7 @@ function EmptyBox({ title = "Sin datos", children }) {
 /* ====== Página principal ====== */
 export default function ColmenaDetallePage() {
   const { id } = useParams();
-  const location = useLocation();
 
-  const [open, setOpen] = useState(false);
   const [colmena, setColmena] = useState(null);
   const [lecturas, setLecturas] = useState([]);
   const [pesoActual, setPesoActual] = useState(null);
@@ -143,23 +120,10 @@ export default function ColmenaDetallePage() {
   const [fail, setFail] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const usuario = JSON.parse(localStorage.getItem("usuario"));
-  const email = usuario?.correo_electronico || "Invitado";
-  const initials = (email || "U").slice(0, 2).toUpperCase();
-
-  const navItems = [
-    { to: "/dashboard", label: "🏠 Inicio" },
-    { to: "/colmenas", label: "🐝 Colmenas" },
-    { to: "/reportes", label: "📄 Reportes" },
-    { to: "/sensores", label: "🛠 Sensores" },
-    { to: "/cuenta", label: "👤 Cuenta" },
-  ];
-
   useEffect(() => {
     setLoading(true);
     setFail(false);
 
-    // ✅ Ahora usa la URL dinámica de localhost:4000
     axios
       .get(`${API_BASE_URL}/colmenas/${id}/detalle`)
       .then((res) => {
@@ -208,47 +172,26 @@ export default function ColmenaDetallePage() {
   const ultimaFechaFmt = useMemo(() => (ultimaFecha ? formatFecha(ultimaFecha) : null), [ultimaFecha]);
 
   return (
-    <div className={`dash-root ${open ? "drawer-open" : ""}`}>
-      <header className="topbar">
-        <button className="icon-btn" onClick={() => setOpen(!open)}>
-          {open ? <CloseIcon /> : <BeeIcon />}
-        </button>
-        <div className="brand">
-          <img src={logo} alt="AbejaNet" />
-          <span className="brand-name">AbejaNet</span>
-        </div>
-        <div className="user-chip">
-          <span className="user-initials">{initials}</span>
-          <span className="user-mail">{email}</span>
-        </div>
-      </header>
+    <div className="sensores-layout">
 
-      <aside className="drawer">
-        <div className="drawer-head">
-          <img src={logo} alt="AbejaNet" />
-          <strong>AbejaNet</strong>
-        </div>
-        <ul className="drawer-links">
-          {navItems.map(({ to, label }) => (
-            <li key={to}>
-              <Link to={to} className={location.pathname === to ? "active" : ""} onClick={() => setOpen(false)}>
-                {label}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </aside>
-
-      <button className="overlay" onClick={() => setOpen(false)} />
-
-      <main className="content">
+      <main className="sensores-main">
         <div className="detalle-colmena-page">
-          <div className="page-head">
+          <div className="page-head" style={{ marginBottom: "20px" }}>
             <div className="crumbs">
-              <Link to="/colmenas" className="crumb-link">← Volver a Colmenas</Link>
-              {colmena?.nombre && <span className="crumb-current">{colmena.nombre}</span>}
+              <Link to="/colmenas" style={{ color: "#ffe600", textDecoration: "none", fontWeight: "600" }}>
+                ← Volver a Colmenas
+              </Link>
+              {colmena?.nombre && (
+                <h1 style={{ margin: "10px 0 0 0", color: "#fff", fontSize: "2rem" }}>
+                  {colmena.nombre}
+                </h1>
+              )}
             </div>
-            {colmena?.apiario && <span className="badge-apiario-head">📍 {colmena.apiario}</span>}
+            {colmena?.apiario && (
+              <span className="sensores-resumen-pill" style={{ display: "inline-block", marginTop: "10px" }}>
+                📍 Apiario: {colmena.apiario}
+              </span>
+            )}
           </div>
 
           <div className="info-grid">
@@ -265,11 +208,11 @@ export default function ColmenaDetallePage() {
                   <ResponsiveContainer width="100%" height={260}>
                     <LineChart data={lecturas}>
                       <CartesianGrid strokeDasharray="3 3" opacity={0.25} />
-                      <XAxis dataKey="fecha" type="number" tickFormatter={formatFecha} domain={["auto", "auto"]} />
-                      <YAxis />
-                      <Tooltip labelFormatter={formatFecha} />
-                      <Legend />
-                      <Line type="monotone" dataKey="temperatura" name="Temperatura (°C)" dot={false} strokeWidth={2} />
+                      <XAxis dataKey="fecha" type="number" tickFormatter={formatFecha} domain={["auto", "auto"]} stroke="#aaa" />
+                      <YAxis stroke="#aaa" />
+                      <Tooltip labelFormatter={formatFecha} contentStyle={{ backgroundColor: "#1e1e1e", border: "1px solid #444" }} />
+                      <Legend wrapperStyle={{ color: "#aaa" }} />
+                      <Line type="monotone" dataKey="temperatura" name="Temperatura (°C)" dot={false} stroke="#ff5722" strokeWidth={3} />
                     </LineChart>
                   </ResponsiveContainer>
                 ) : <EmptyBox>Sin lecturas disponibles.</EmptyBox>}
@@ -280,11 +223,11 @@ export default function ColmenaDetallePage() {
                   <ResponsiveContainer width="100%" height={260}>
                     <LineChart data={lecturas}>
                       <CartesianGrid strokeDasharray="3 3" opacity={0.25} />
-                      <XAxis dataKey="fecha" type="number" tickFormatter={formatFecha} domain={["auto", "auto"]} />
-                      <YAxis />
-                      <Tooltip labelFormatter={formatFecha} />
-                      <Legend />
-                      <Line type="monotone" dataKey="humedad" name="Humedad (%)" dot={false} strokeWidth={2} />
+                      <XAxis dataKey="fecha" type="number" tickFormatter={formatFecha} domain={["auto", "auto"]} stroke="#aaa" />
+                      <YAxis stroke="#aaa" />
+                      <Tooltip labelFormatter={formatFecha} contentStyle={{ backgroundColor: "#1e1e1e", border: "1px solid #444" }} />
+                      <Legend wrapperStyle={{ color: "#aaa" }} />
+                      <Line type="monotone" dataKey="humedad" name="Humedad (%)" dot={false} stroke="#03a9f4" strokeWidth={3} />
                     </LineChart>
                   </ResponsiveContainer>
                 ) : <EmptyBox>Sin lecturas disponibles.</EmptyBox>}
@@ -295,11 +238,11 @@ export default function ColmenaDetallePage() {
                   <ResponsiveContainer width="100%" height={260}>
                     <LineChart data={lecturas}>
                       <CartesianGrid strokeDasharray="3 3" opacity={0.25} />
-                      <XAxis dataKey="fecha" type="number" tickFormatter={formatFecha} domain={["auto", "auto"]} />
-                      <YAxis />
-                      <Tooltip labelFormatter={formatFecha} />
-                      <Legend />
-                      <Line type="monotone" dataKey="peso" name="Peso (kg)" dot={false} strokeWidth={2} />
+                      <XAxis dataKey="fecha" type="number" tickFormatter={formatFecha} domain={["auto", "auto"]} stroke="#aaa" />
+                      <YAxis stroke="#aaa" />
+                      <Tooltip labelFormatter={formatFecha} contentStyle={{ backgroundColor: "#1e1e1e", border: "1px solid #444" }} />
+                      <Legend wrapperStyle={{ color: "#aaa" }} />
+                      <Line type="monotone" dataKey="peso" name="Peso (kg)" dot={false} stroke="#8bc34a" strokeWidth={3} />
                     </LineChart>
                   </ResponsiveContainer>
                 ) : <EmptyBox>Sin lecturas disponibles.</EmptyBox>}
@@ -307,9 +250,9 @@ export default function ColmenaDetallePage() {
             </div>
           </section>
 
-          {loading && <div className="loading-note">Cargando datos…</div>}
+          {loading && <div className="cuenta-loading">Cargando datos de la colmena…</div>}
           {fail && (
-            <div className="empty-box error">
+            <div className="empty-box error" style={{ color: "#ff6b6b" }}>
               <h4>Ocurrió un problema</h4>
               <p>Verifica la API local: <code>GET {API_BASE_URL}/colmenas/{id}/detalle</code></p>
             </div>

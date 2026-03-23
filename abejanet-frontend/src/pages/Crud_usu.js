@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import API_BASE_URL from "../api"; // 👈 Importamos la URL centralizada
+import API_BASE_URL from "../api";
+import Sidebar from "./Sidebar"; // 👈 El menú global
 import "./Crud_usu.css"; 
+import "./Sensores.css"; // 👈 Para heredar el layout base oscuro
 
 export default function Crud_usu() {
-  const navigate = useNavigate();
   const [usuarios, setUsuarios] = useState([]);
   const [roles, setRoles] = useState([]); 
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
+
+  // Modal State
+  const [showModal, setShowModal] = useState(false);
 
   // Filtros
   const [filtroCorreo, setFiltroCorreo] = useState("");
@@ -25,51 +28,42 @@ export default function Crud_usu() {
   });
 
   // --- FUNCIONES DE CARGA ---
-
   const cargarUsuarios = () => {
-    const params = new URLSearchParams();
-    if (filtroCorreo) params.append("correo", filtroCorreo);
-    const queryString = params.toString();
-
     setLoading(true);
-    // ✅ Ahora usa la URL dinámica de localhost:4000
-    return fetch(`${API_BASE_URL}/usuarios?${queryString}`)
+    fetch(`${API_BASE_URL}/usuarios`)
       .then((res) => res.json())
-      .then((data) => {
-        setUsuarios(data);
-      })
-      .catch((err) => {
-        console.error("Error al cargar usuarios:", err);
-      })
+      .then((data) => setUsuarios(Array.isArray(data) ? data : []))
+      .catch((err) => console.error("Error al cargar usuarios:", err))
       .finally(() => setLoading(false));
   };
 
   const cargarRoles = () => {
-    // ✅ Ahora usa la URL dinámica de localhost:4000
-    return fetch(`${API_BASE_URL}/roles`)
+    fetch(`${API_BASE_URL}/roles`)
       .then((res) => res.json())
-      .then((data) => setRoles(data))
-      .catch((err) => {
-        console.error("Error al cargar roles:", err);
-        setRoles([{id:1, nombre: 'administrador'}, {id:2, nombre:'usuario'}]);
-      });
+      .then((data) => setRoles(Array.isArray(data) ? data : []))
+      .catch((err) => console.error("Error al cargar roles:", err));
   };
 
   useEffect(() => {
     cargarRoles();
+    cargarUsuarios();
   }, []);
 
-  useEffect(() => {
-    cargarUsuarios();
-  }, [filtroCorreo]);
+  // --- FILTRADO LOCAL INSTANTÁNEO ---
+  const usuariosFiltrados = usuarios.filter((usu) => {
+    return filtroCorreo 
+      ? usu.correo_electronico.toLowerCase().includes(filtroCorreo.toLowerCase()) 
+      : true;
+  });
 
   // --- HANDLERS ---
-
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const resetForm = () => {
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setEditing(null);
     setFormData({
       nombre: "",
       apellido_paterno: "",
@@ -79,7 +73,11 @@ export default function Crud_usu() {
       rol_id: "",
       esta_activo: "true"
     });
-    setEditing(null);
+  };
+
+  const handleOpenCreate = () => {
+    handleCloseModal();
+    setShowModal(true);
   };
 
   const handleSubmit = (e) => {
@@ -107,20 +105,15 @@ export default function Crud_usu() {
       .then(async (res) => {
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
-          throw new Error(
-            errorData.error || `Error ${res.status}: Operación fallida`
-          );
+          throw new Error(errorData.error || `Error ${res.status}: Operación fallida`);
         }
         return res.json();
       })
       .then(() => {
         cargarUsuarios();
-        resetForm();
-        alert(editing ? "Usuario actualizado" : "Usuario creado");
+        handleCloseModal(); // Cierra el modal tras guardar
       })
-      .catch((err) => {
-        alert(err.message);
-      });
+      .catch((err) => alert(err.message));
   };
 
   const handleEdit = (usuario) => {
@@ -134,15 +127,12 @@ export default function Crud_usu() {
       rol_id: usuario.rol_id || "",
       esta_activo: usuario.esta_activo ? "true" : "false"
     });
-    window.scrollTo(0, 0);
+    setShowModal(true);
   };
 
   const handleDelete = (id) => {
-    if (window.confirm("¿Seguro que deseas eliminar este usuario?")) {
-      fetch(`${API_BASE_URL}/usuarios/${id}`, {
-        method: "DELETE",
-      })
-        .then((res) => res.json())
+    if (window.confirm("¿Seguro que deseas eliminar este usuario? No podrá volver a iniciar sesión.")) {
+      fetch(`${API_BASE_URL}/usuarios/${id}`, { method: "DELETE" })
         .then(() => cargarUsuarios())
         .catch((err) => console.error("Error al eliminar usuario:", err));
     }
@@ -153,68 +143,37 @@ export default function Crud_usu() {
   };
 
   return (
-    <div className="usuarios-layout">
-      <aside className="usuarios-sidebar">
-        <div className="usuarios-logo" onClick={() => navigate("/dashboard")}>
-          <span className="usuarios-logo-icon">🐝</span>
-          <span className="usuarios-logo-text">AbejaNet</span>
-        </div>
-        <nav className="usuarios-nav">
-          <button className="usuarios-nav-item" onClick={() => navigate("/dashboard")}>🏠 Inicio</button>
-          <button className="usuarios-nav-item" onClick={() => navigate("/apiarios")}>🏷️ Apiarios</button>
-          <button className="usuarios-nav-item" onClick={() => navigate("/colmenas")}>🍯 Colmenas</button>
-          <button className="usuarios-nav-item" onClick={() => navigate("/sensores")}>📡 Sensores</button>
-          <button className="usuarios-nav-item usuarios-nav-item-active" onClick={() => navigate("/usuarios")}>👥 Usuarios</button>
-          <button className="usuarios-nav-item" onClick={() => navigate("/cuenta")}>👤 Cuenta</button>
-        </nav>
-      </aside>
+    <div className="sensores-layout">
+      
+      <Sidebar />
 
-      <main className="usuarios-main">
-        <header className="usuarios-header">
+      <main className="sensores-main">
+        <header className="sensores-header">
           <div>
-            <p className="usuarios-badge">Administración</p>
+            <p className="sensores-badge">Administración</p>
             <h1>Gestión de Usuarios</h1>
-            <p className="usuarios-subtitle">Administra el acceso y roles de los usuarios.</p>
+            <p className="sensores-subtitle">Administra el acceso y los roles de las personas en el sistema.</p>
           </div>
-          <div className="usuarios-header-resumen">
-            <span className="usuarios-resumen-pill">Total: <strong>{usuarios.length}</strong></span>
+          <div className="sensores-header-resumen">
+            <span className="sensores-resumen-pill">Total: <strong>{usuariosFiltrados.length}</strong></span>
           </div>
         </header>
 
-        <section className="usuarios-card">
-          <div className="form-usuario-filtros">
-            <input type="text" placeholder="Buscar por correo..." value={filtroCorreo} onChange={(e) => setFiltroCorreo(e.target.value)} />
+        {/* --- FILTROS --- */}
+        <section className="sensores-card" style={{ paddingBottom: '16px' }}>
+          <div className="form-usuario-filtros" style={{ marginBottom: 0 }}>
+            <input 
+              type="text" 
+              placeholder="Buscar por correo electrónico..." 
+              value={filtroCorreo} 
+              onChange={(e) => setFiltroCorreo(e.target.value)} 
+            />
             <button type="button" className="btn-secundario" onClick={limpiarFiltros}>Limpiar</button>
           </div>
-
-          <form className="form-usuario" onSubmit={handleSubmit}>
-            <input type="text" name="nombre" placeholder="Nombre" value={formData.nombre} onChange={handleChange} required />
-            <input type="text" name="apellido_paterno" placeholder="Apellido Paterno" value={formData.apellido_paterno} onChange={handleChange} />
-            <input type="text" name="apellido_materno" placeholder="Apellido Materno" value={formData.apellido_materno} onChange={handleChange} />
-            <input type="email" name="correo_electronico" placeholder="Correo Electrónico" value={formData.correo_electronico} onChange={handleChange} required />
-            
-            <select name="rol_id" value={formData.rol_id} onChange={handleChange} required >
-              <option value="">-- Seleccionar Rol --</option>
-              {roles.map((rol) => (
-                <option key={rol.id} value={rol.id}>{rol.nombre}</option>
-              ))}
-            </select>
-
-            <select name="esta_activo" value={formData.esta_activo} onChange={handleChange} required >
-               <option value="true">Activo</option>
-               <option value="false">Inactivo</option>
-            </select>
-
-            <input type="password" name="contrasena" placeholder={editing ? "Nueva Contraseña (Opcional)" : "Contraseña"} value={formData.contrasena} onChange={handleChange} required={!editing} />
-
-            <div className="form-usuario-actions">
-              <button type="submit" className="btn-primario">{editing ? "Actualizar" : "Crear"}</button>
-              {editing && <button type="button" className="btn-secundario" onClick={resetForm}>Cancelar</button>}
-            </div>
-          </form>
         </section>
 
-        <section className="usuarios-card">
+        {/* --- TABLA --- */}
+        <section className="sensores-card">
           {loading ? (
             <div className="cuenta-loading">Cargando usuarios...</div>
           ) : (
@@ -230,27 +189,99 @@ export default function Crud_usu() {
                   </tr>
                 </thead>
                 <tbody>
-                  {usuarios.map((usu) => (
-                    <tr key={usu.id}>
-                      <td>{usu.nombre} {usu.apellido_paterno}</td>
-                      <td>{usu.correo_electronico}</td>
-                      <td>{usu.nombre_rol || usu.rol_id}</td>
-                      <td>
-                        <span className={`estado-pill ${usu.esta_activo ? "estado-activo" : "estado-inactivo"}`}>
-                          {usu.esta_activo ? "Activo" : "Inactivo"}
-                        </span>
-                      </td>
-                      <td className="tabla-usuarios-actions">
-                        <button className="editar" onClick={() => handleEdit(usu)}>✏️</button>
-                        <button className="eliminar" onClick={() => handleDelete(usu.id)}>🗑️</button>
-                      </td>
+                  {usuariosFiltrados.length > 0 ? (
+                    usuariosFiltrados.map((usu) => (
+                      <tr key={usu.id}>
+                        <td style={{ fontWeight: '600' }}>{usu.nombre} {usu.apellido_paterno}</td>
+                        <td style={{ color: '#ccc' }}>{usu.correo_electronico}</td>
+                        <td>
+                          {/* El id 1 suele ser admin, el 2 usuario, ajustamos el color según eso */}
+                          <span className={`rol-pill rol-${usu.rol_id}`}>
+                            {roles.find(r => r.id === usu.rol_id)?.nombre || usu.rol_id}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`estado-pill ${usu.esta_activo ? "estado-activo" : "estado-inactivo"}`}>
+                            {usu.esta_activo ? "Activo" : "Inactivo"}
+                          </span>
+                        </td>
+                        <td className="tabla-usuarios-actions">
+                          <button className="editar" onClick={() => handleEdit(usu)}>✏️</button>
+                          <button className="eliminar" onClick={() => handleDelete(usu.id)}>🗑️</button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="5" className="usuarios-empty">No hay usuarios registrados con ese correo.</td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>
           )}
+
+          {/* Botón de Agregar Abajo */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+            <button className="btn-primario" onClick={handleOpenCreate}>
+              ➕ Nuevo Usuario
+            </button>
+          </div>
         </section>
+
+        {/* ==========================================
+            MODAL FLOTANTE DE USUARIOS
+            ========================================== */}
+        {showModal && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <h2>{editing ? "Editar Usuario" : "Crear Nuevo Usuario"}</h2>
+              
+              <form className="form-usuario-modal" onSubmit={handleSubmit}>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <div style={{ flex: 1 }}>
+                    <label>Nombre:</label>
+                    <input type="text" name="nombre" placeholder="Nombre" value={formData.nombre} onChange={handleChange} required />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label>Apellidos:</label>
+                    <input type="text" name="apellido_paterno" placeholder="Paterno" value={formData.apellido_paterno} onChange={handleChange} />
+                  </div>
+                </div>
+
+                <label>Correo Electrónico:</label>
+                <input type="email" name="correo_electronico" placeholder="usuario@abejanet.com" value={formData.correo_electronico} onChange={handleChange} required />
+                
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <div style={{ flex: 1 }}>
+                    <label>Rol en el sistema:</label>
+                    <select name="rol_id" value={formData.rol_id} onChange={handleChange} required >
+                      <option value="">-- Seleccionar --</option>
+                      {roles.map((rol) => (
+                        <option key={rol.id} value={rol.id}>{rol.nombre}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label>Estado de la cuenta:</label>
+                    <select name="esta_activo" value={formData.esta_activo} onChange={handleChange} required >
+                       <option value="true">Activo (Permitir acceso)</option>
+                       <option value="false">Inactivo (Bloquear acceso)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <label>{editing ? "Cambiar Contraseña (Dejar vacío si no cambia)" : "Contraseña Temporal"}</label>
+                <input type="password" name="contrasena" placeholder="******" value={formData.contrasena} onChange={handleChange} required={!editing} />
+
+                <div className="modal-actions">
+                  <button type="button" className="btn-secundario" onClick={handleCloseModal}>Cancelar</button>
+                  <button type="submit" className="btn-primario">{editing ? "Guardar Cambios" : "Crear Usuario"}</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import API_BASE_URL from "../api"; // 👈 Importamos la URL centralizada
-import "./ColmenasPage.css";
-import logo from "../assets/abeja_logo.png";
+import { Link } from "react-router-dom";
+import API_BASE_URL from "../api"; 
+import Sidebar from "./Sidebar"; // 👈 Importamos nuestro menú mágico
+import "./Sensores.css"; // 👈 Para heredar el layout oscuro
+import "./ColmenasPage.css"; // Solo para estilos específicos de las tarjetas
 
 /* SUBCOMPONENTES */
 function StatChip({ label, value }) {
@@ -28,9 +29,6 @@ function SkeletonCard() {
 
 /* PÁGINA */
 export default function ColmenasPage() {
-  const navigate = useNavigate();
-  const location = useLocation();
-
   const [colmenas, setColmenas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fail, setFail] = useState(false);
@@ -43,25 +41,10 @@ export default function ColmenasPage() {
   const [apiario, setApiario] = useState("todos");
   const [sort, setSort] = useState("nombre_asc");
 
-  // Usuario chip
-  const usuario = JSON.parse(localStorage.getItem("usuario") || "null");
-  const email = usuario?.correo_electronico || "Invitado";
-  const initials = (email || "U").slice(0, 2).toUpperCase();
-
-  const navItems = [
-    { to: "/dashboard", label: "Inicio", icon: "🏠" },
-    { to: "/apiarios", label: "Apiarios", icon: "🏷️" },
-    { to: "/colmenas", label: "Colmenas", icon: "🐝" },
-    { to: "/sensores", label: "Sensores", icon: "🛠" },
-    { to: "/cuenta", label: "Cuenta", icon: "👤" },
-    { to: "/usuarios", label: "Usuarios", icon: "👤" },
-  ];
-
   useEffect(() => {
     const cargarColmenas = async () => {
       try {
         setLoading(true);
-        // ✅ Ahora usa la URL dinámica de localhost:4000
         const res = await axios.get(`${API_BASE_URL}/colmenas`);
         setColmenas(res.data || []);
       } catch (error) {
@@ -76,7 +59,7 @@ export default function ColmenasPage() {
 
   const apiarios = useMemo(() => {
     const set = new Set();
-    colmenas.forEach((c) => c.apiario && set.add(c.apiario));
+    colmenas.forEach((c) => c.nombre_apiario && set.add(c.nombre_apiario));
     return ["todos", ...Array.from(set)];
   }, [colmenas]);
 
@@ -88,13 +71,13 @@ export default function ColmenasPage() {
       rows = rows.filter((c) => {
         const n = (c.nombre || "").toLowerCase();
         const d = (c.descripcion_especifica || "").toLowerCase();
-        const a = (c.apiario || "").toLowerCase();
+        const a = (c.nombre_apiario || "").toLowerCase();
         return n.includes(needle) || d.includes(needle) || a.includes(needle);
       });
     }
 
     if (apiario !== "todos") {
-      rows = rows.filter((c) => (c.apiario || "") === apiario);
+      rows = rows.filter((c) => (c.nombre_apiario || "") === apiario);
     }
 
     const compareStr = (a, b) =>
@@ -103,8 +86,8 @@ export default function ColmenasPage() {
     switch (sort) {
       case "nombre_asc": rows.sort((a, b) => compareStr(a.nombre, b.nombre)); break;
       case "nombre_desc": rows.sort((a, b) => compareStr(b.nombre, a.nombre)); break;
-      case "apiario_asc": rows.sort((a, b) => compareStr(a.apiario, b.apiario)); break;
-      case "apiario_desc": rows.sort((a, b) => compareStr(b.apiario, a.apiario)); break;
+      case "apiario_asc": rows.sort((a, b) => compareStr(a.nombre_apiario, b.nombre_apiario)); break;
+      case "apiario_desc": rows.sort((a, b) => compareStr(b.nombre_apiario, a.nombre_apiario)); break;
       default: break;
     }
 
@@ -122,7 +105,6 @@ export default function ColmenasPage() {
     setColmenas((xs) => xs.filter((c) => c.id !== id));
 
     try {
-      // ✅ Ahora usa la URL dinámica de localhost:4000
       const res = await axios.delete(`${API_BASE_URL}/colmenas/${id}`);
       if (res.status !== 200) throw new Error("No se pudo eliminar");
     } catch (e) {
@@ -134,39 +116,18 @@ export default function ColmenasPage() {
   };
 
   return (
-    <div className="colmenas-layout">
-      <aside className="colmenas-sidebar">
-        <div className="colmenas-logo" onClick={() => navigate("/dashboard")} title="Volver al inicio">
-          <img src={logo} alt="AbejaNet" className="colmenas-logo-img" />
-          <span className="colmenas-logo-text">AbejaNet</span>
-        </div>
+    <div className="sensores-layout">
+      
+      {/* 👈 Nuestro menú global insertado aquí */}
+      <Sidebar />
 
-        <nav className="colmenas-nav">
-          {navItems.map((item) => (
-            <button
-              key={item.to}
-              className={"colmenas-nav-item" + (location.pathname === item.to ? " colmenas-nav-item-active" : "")}
-              onClick={() => navigate(item.to)}
-            >
-              <span className="colmenas-nav-icon">{item.icon}</span>
-              <span>{item.label}</span>
-            </button>
-          ))}
-        </nav>
-
-        <div className="colmenas-sidebar-footer" title={email}>
-          <div className="colmenas-user-initials">{initials}</div>
-          <div className="colmenas-user-email">{email}</div>
-        </div>
-      </aside>
-
-      <main className="colmenas-main">
+      <main className="sensores-main">
         <div className="colmenas-container">
-          <header className="colmenas-header">
+          <header className="sensores-header">
             <div>
-              <p className="colmenas-badge">Panel de control</p>
+              <p className="sensores-badge">Panel de control</p>
               <h1>Colmenas registradas</h1>
-              <p className="colmenas-subtitle">Administra las colmenas de tus apiarios y ubicaciones.</p>
+              <p className="sensores-subtitle">Administra las colmenas de tus apiarios y ubicaciones.</p>
             </div>
             <div className="colmenas-header-stats">
               <StatChip label="Total" value={colmenas.length} />
@@ -175,7 +136,7 @@ export default function ColmenasPage() {
             </div>
           </header>
 
-          <section className="colmenas-card">
+          <section className="sensores-card">
             <div className="colmenas-card-head-row">
               <div className="toolbar">
                 <div className="input-wrap">
@@ -198,11 +159,11 @@ export default function ColmenasPage() {
                   </label>
                 </div>
               </div>
-              <Link to="/colmenas/crear" className="btn-primary">➕ Crear colmena</Link>
+              <Link to="/colmenas/crear" className="btn-primario">➕ Crear colmena</Link>
             </div>
           </section>
 
-          <section className="colmenas-card colmenas-card-lista">
+          <section className="colmenas-card-lista">
             {errorDelete && (
               <div className="empty-box error" style={{ marginBottom: 12 }}>
                 <h3>⚠️ Error</h3><p>{errorDelete}</p>
@@ -226,14 +187,14 @@ export default function ColmenasPage() {
                   <div key={colmena.id} className="card-colmena">
                     <div className="card-head">
                       <h3 className="colmena-nombre">{colmena.nombre}</h3>
-                      <span className="badge-apiario">📍 {colmena.apiario || "—"}</span>
+                      <span className="badge-apiario">📍 {colmena.nombre_apiario || "—"}</span>
                     </div>
                     <p className="colmena-desc">{colmena.descripcion_especifica || "Sin descripción"}</p>
                     <div className="card-foot">
-                      <Link to={`/colmena/${colmena.id}`} className="pill">Ver detalle</Link>
+                      <Link to={`/colmena/${colmena.id}`} className="pill">📈 Ver detalle</Link>
                       <Link to={`/colmenas/editar/${colmena.id}`} className="pill edit">✏️ Editar</Link>
                       <button className="pill danger" onClick={() => handleDelete(colmena.id, colmena.nombre)} disabled={deletingId === colmena.id}>
-                        {deletingId === colmena.id ? "..." : "🗑️"}
+                        {deletingId === colmena.id ? "..." : "🗑️ Eliminar"}
                       </button>
                     </div>
                   </div>

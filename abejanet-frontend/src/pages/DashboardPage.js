@@ -1,7 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate, Link } from "react-router-dom";
-import API_BASE_URL from "../api"; // 👈 Importamos la URL centralizada
-import logo from "../assets/abeja_logo.png";
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import API_BASE_URL from "../api"; 
+import Sidebar from "./Sidebar"; // 👈 Nuestro menú global
+import "./Sensores.css"; // 👈 Para heredar el fondo oscuro
 import "./DashboardPage.css";
 
 function StatChip({ label, value }) {
@@ -13,10 +14,7 @@ function StatChip({ label, value }) {
   );
 }
 
-function DashboardPage() {
-  const navigate = useNavigate();
-  const location = useLocation();
-
+export default function DashboardPage() {
   // Estado para los datos reales del backend
   const [kpis, setKpis] = useState({
     colmenasTotales: 0,
@@ -25,19 +23,12 @@ function DashboardPage() {
     alertasHoy: 0,
   });
 
-  const usuario = JSON.parse(localStorage.getItem("usuario") || "null");
-  const email = usuario?.correo_electronico || "Invitado";
+  // Extraemos solo el nombre para dar la bienvenida
+  const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
   const nombre = usuario?.nombre || "Apicultor";
-
-  const initials = useMemo(() => {
-    const base = (email || "U").trim();
-    return base.slice(0, 2).toUpperCase();
-  }, [email]);
 
   // 📈 Cargar estadísticas reales desde el backend local
   useEffect(() => {
-    // Nota: Asegúrate de tener un endpoint en el backend que dé este resumen
-    // Si no lo tienes, puedes hacer fetch a /api/colmenas y /api/apiarios y contar el length
     Promise.all([
       fetch(`${API_BASE_URL}/colmenas`).then(res => res.json()),
       fetch(`${API_BASE_URL}/apiarios`).then(res => res.json()),
@@ -45,62 +36,29 @@ function DashboardPage() {
     ])
       .then(([colmenas, apiarios, sensores]) => {
         setKpis({
-          colmenasTotales: colmenas.length || 0,
-          apiarios: apiarios.length || 0,
-          sensoresActivos: sensores.filter(s => s.estado === 'activo').length || 0,
-          alertasHoy: 0, // Este podrías implementarlo después
+          colmenasTotales: Array.isArray(colmenas) ? colmenas.length : 0,
+          apiarios: Array.isArray(apiarios) ? apiarios.length : 0,
+          sensoresActivos: Array.isArray(sensores) ? sensores.filter(s => s.estado === 'activo').length : 0,
+          alertasHoy: 0, // Listo para implementarse en el futuro
         });
       })
       .catch(err => console.error("Error cargando estadísticas del dashboard:", err));
   }, []);
 
-  const navItems = [
-    { to: "/dashboard", label: "Inicio", icon: "🏠" },
-    { to: "/apiarios", label: "Apiarios", icon: "🏷️" },
-    { to: "/colmenas", label: "Colmenas", icon: "🐝" },
-    { to: "/sensores", label: "Sensores", icon: "🛠" },
-    { to: "/cuenta", label: "Cuenta", icon: "👤" },
-    { to: "/usuarios", label: "Usuarios", icon: "👤" },
-  ];
-
   return (
-    <div className="dashboard-layout">
-      {/* ==== SIDEBAR ==== */}
-      <aside className="dashboard-sidebar">
-        <div className="dashboard-logo" onClick={() => navigate("/dashboard")}>
-          <img src={logo} alt="AbejaNet" className="dashboard-logo-img" />
-          <span className="dashboard-logo-text">AbejaNet</span>
-        </div>
-
-        <nav className="dashboard-nav">
-          {navItems.map((item) => (
-            <button
-              key={item.to}
-              className={"dashboard-nav-item" + (location.pathname === item.to ? " dashboard-nav-item-active" : "")}
-              onClick={() => navigate(item.to)}
-            >
-              <span className="dashboard-nav-icon">{item.icon}</span>
-              <span>{item.label}</span>
-            </button>
-          ))}
-        </nav>
-
-        <div className="dashboard-sidebar-footer" title={email}>
-          <div className="dashboard-user-initials">{initials}</div>
-          <div className="dashboard-user-meta">
-            <span className="dashboard-user-name">{nombre}</span>
-            <span className="dashboard-user-email">{email}</span>
-          </div>
-        </div>
-      </aside>
+    <div className="sensores-layout">
+      
+      {/* ==== SIDEBAR GLOBAL ==== */}
+      <Sidebar />
 
       {/* ==== CONTENIDO PRINCIPAL ==== */}
-      <main className="dashboard-main">
+      <main className="sensores-main">
+        
         <header className="dashboard-header">
           <div>
-            <p className="dashboard-badge">Panel general</p>
+            <p className="sensores-badge">Panel general</p>
             <h1>Bienvenido, {nombre.split(" ")[0]} 👋</h1>
-            <p className="dashboard-subtitle">
+            <p className="sensores-subtitle">
               Monitorea el estado de tus apiarios, colmenas y sensores en tiempo real.
             </p>
           </div>
@@ -116,8 +74,10 @@ function DashboardPage() {
         {/* Tarjeta hero con CTA */}
         <section className="dashboard-card dashboard-hero">
           <div>
-            <h2>Visión rápida de tu sistema 🐝</h2>
-            <p>Revisa tus registros y genera reportes para analizar la producción.</p>
+            <h2 style={{ margin: "0 0 6px 0" }}>Visión rápida de tu sistema 🐝</h2>
+            <p style={{ margin: "0 0 12px 0", color: "#cccccc" }}>
+              Revisa tus registros y genera reportes para analizar la producción.
+            </p>
             <div className="dashboard-hero-actions">
               <Link to="/colmenas" className="btn-primario">Ver colmenas</Link>
               <Link to="/sensores" className="btn-secundario">Gestionar sensores</Link>
@@ -156,9 +116,8 @@ function DashboardPage() {
             </ul>
           </article>
         </section>
+
       </main>
     </div>
   );
 }
-
-export default DashboardPage;
