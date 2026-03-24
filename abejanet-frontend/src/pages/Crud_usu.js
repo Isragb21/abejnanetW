@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import API_BASE_URL from "../api";
-import Sidebar from "./Sidebar"; // 👈 El menú global
+import Sidebar from "./Sidebar";
 import "./Crud_usu.css"; 
-import "./Sensores.css"; // 👈 Para heredar el layout base oscuro
+import "./Sensores.css"; 
 
 export default function Crud_usu() {
   const [usuarios, setUsuarios] = useState([]);
@@ -10,13 +10,9 @@ export default function Crud_usu() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
 
-  // Modal State
   const [showModal, setShowModal] = useState(false);
-
-  // Filtros
   const [filtroCorreo, setFiltroCorreo] = useState("");
 
-  // Estado del formulario
   const [formData, setFormData] = useState({
     nombre: "",
     apellido_paterno: "",
@@ -27,7 +23,7 @@ export default function Crud_usu() {
     esta_activo: "true"
   });
 
-  // --- FUNCIONES DE CARGA ---
+  // Ejecuta la petición GET para obtener la lista de usuarios y actualizar el estado
   const cargarUsuarios = () => {
     setLoading(true);
     fetch(`${API_BASE_URL}/usuarios`)
@@ -37,6 +33,7 @@ export default function Crud_usu() {
       .finally(() => setLoading(false));
   };
 
+  // Ejecuta la petición GET para obtener los roles disponibles para el select del formulario
   const cargarRoles = () => {
     fetch(`${API_BASE_URL}/roles`)
       .then((res) => res.json())
@@ -49,18 +46,19 @@ export default function Crud_usu() {
     cargarUsuarios();
   }, []);
 
-  // --- FILTRADO LOCAL INSTANTÁNEO ---
+  // Filtra el array de usuarios en memoria basándose en el input de búsqueda
   const usuariosFiltrados = usuarios.filter((usu) => {
     return filtroCorreo 
       ? usu.correo_electronico.toLowerCase().includes(filtroCorreo.toLowerCase()) 
       : true;
   });
 
-  // --- HANDLERS ---
+  // Actualiza dinámicamente el estado del formulario según el input modificado
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Restablece los valores por defecto al cerrar el modal
   const handleCloseModal = () => {
     setShowModal(false);
     setEditing(null);
@@ -80,6 +78,7 @@ export default function Crud_usu() {
     setShowModal(true);
   };
 
+  // Determina el método HTTP (POST o PUT) y envía el payload a la base de datos
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -111,11 +110,12 @@ export default function Crud_usu() {
       })
       .then(() => {
         cargarUsuarios();
-        handleCloseModal(); // Cierra el modal tras guardar
+        handleCloseModal();
       })
       .catch((err) => alert(err.message));
   };
 
+  // Carga los datos de la fila seleccionada en el estado del formulario para su edición
   const handleEdit = (usuario) => {
     setEditing(usuario.id);
     setFormData({
@@ -130,11 +130,25 @@ export default function Crud_usu() {
     setShowModal(true);
   };
 
+  // Ejecuta la petición DELETE para remover el registro de la tabla
   const handleDelete = (id) => {
     if (window.confirm("¿Seguro que deseas eliminar este usuario? No podrá volver a iniciar sesión.")) {
       fetch(`${API_BASE_URL}/usuarios/${id}`, { method: "DELETE" })
         .then(() => cargarUsuarios())
         .catch((err) => console.error("Error al eliminar usuario:", err));
+    }
+  };
+
+  // Ejecuta la petición PUT a la ruta específica para establecer el valor del secreto_2fa como NULL
+  const handleReset2FA = (id, nombre) => {
+    if (window.confirm(`¿Seguro que deseas reiniciar el acceso 2FA de ${nombre}? En su próximo inicio de sesión se le pedirá configurar un nuevo dispositivo.`)) {
+      fetch(`${API_BASE_URL}/usuarios/${id}/reset-2fa`, { method: "PUT" })
+        .then(async (res) => {
+          if (!res.ok) throw new Error("Ocurrió un error al intentar reiniciar la autenticación de 2 pasos.");
+          const data = await res.json();
+          alert(data.message);
+        })
+        .catch((err) => alert(err.message));
     }
   };
 
@@ -159,7 +173,6 @@ export default function Crud_usu() {
           </div>
         </header>
 
-        {/* --- FILTROS --- */}
         <section className="sensores-card" style={{ paddingBottom: '16px' }}>
           <div className="form-usuario-filtros" style={{ marginBottom: 0 }}>
             <input 
@@ -172,7 +185,6 @@ export default function Crud_usu() {
           </div>
         </section>
 
-        {/* --- TABLA --- */}
         <section className="sensores-card">
           {loading ? (
             <div className="cuenta-loading">Cargando usuarios...</div>
@@ -195,7 +207,6 @@ export default function Crud_usu() {
                         <td style={{ fontWeight: '600' }}>{usu.nombre} {usu.apellido_paterno}</td>
                         <td style={{ color: '#ccc' }}>{usu.correo_electronico}</td>
                         <td>
-                          {/* El id 1 suele ser admin, el 2 usuario, ajustamos el color según eso */}
                           <span className={`rol-pill rol-${usu.rol_id}`}>
                             {roles.find(r => r.id === usu.rol_id)?.nombre || usu.rol_id}
                           </span>
@@ -206,8 +217,16 @@ export default function Crud_usu() {
                           </span>
                         </td>
                         <td className="tabla-usuarios-actions">
-                          <button className="editar" onClick={() => handleEdit(usu)}>✏️</button>
-                          <button className="eliminar" onClick={() => handleDelete(usu.id)}>🗑️</button>
+                          <button className="editar" onClick={() => handleEdit(usu)} title="Editar Usuario">✏️</button>
+                          <button className="eliminar" onClick={() => handleDelete(usu.id)} title="Eliminar Usuario">🗑️</button>
+                          <button 
+                            className="btn-secundario" 
+                            style={{ padding: '4px 8px', marginLeft: '5px', fontSize: '0.9rem' }} 
+                            onClick={() => handleReset2FA(usu.id, usu.nombre)}
+                            title="Reiniciar QR de Autenticación"
+                          >
+                            🔄 2FA
+                          </button>
                         </td>
                       </tr>
                     ))
@@ -221,7 +240,6 @@ export default function Crud_usu() {
             </div>
           )}
 
-          {/* Botón de Agregar Abajo */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
             <button className="btn-primario" onClick={handleOpenCreate}>
               ➕ Nuevo Usuario
@@ -229,9 +247,6 @@ export default function Crud_usu() {
           </div>
         </section>
 
-        {/* ==========================================
-            MODAL FLOTANTE DE USUARIOS
-            ========================================== */}
         {showModal && (
           <div className="modal-overlay">
             <div className="modal-content">
