@@ -27,9 +27,16 @@ app.post("/api/login", async (req, res) => {
     const usuario = result.rows[0];
     if (contrasena !== usuario.contrasena) return res.status(401).json({ error: "Contraseña incorrecta" });
 
+    // 🐛 CORRECCIÓN AQUÍ: Mandar los datos exactos que espera el Frontend
     res.json({
       token: "abejanet-token-v3",
-      usuario: { id: usuario.id, nombre: usuario.nombre, correo: usuario.correo_electronico, rol: usuario.rol_id }
+      usuario: { 
+        id: usuario.id, 
+        nombre: usuario.nombre, 
+        correo_electronico: usuario.correo_electronico, 
+        rol_id: usuario.rol_id, 
+        esta_activo: usuario.esta_activo 
+      }
     });
   } catch (error) {
     res.status(500).json({ error: "Error en el servidor" });

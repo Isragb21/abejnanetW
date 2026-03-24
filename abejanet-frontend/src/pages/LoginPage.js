@@ -26,13 +26,30 @@ function LoginPage() {
     setLoading(true);
 
     try {
-      // ✅ Ahora apunta a http://localhost:4000/api/login
       const res = await axios.post(`${API_BASE_URL}/login`, {
         correo_electronico: correo,
         contrasena,
       });
 
       const { token, usuario } = res.data;
+
+      // 🛑 CANDADO 1: ¿El usuario está inactivo?
+      // Verificamos que la variable exista ('esta_activo' in usuario) para no bloquearte por error si el backend no la manda
+      if ('esta_activo' in usuario && (usuario.esta_activo === false || String(usuario.esta_activo) === "false")) {
+        setError("Tu cuenta ha sido desactivada. Contacta al administrador.");
+        setLoading(false);
+        return; 
+      }
+
+      // 🛑 CANDADO 2: ¿El usuario no es administrador?
+      // Verificamos que exista y usamos != (en vez de !==) por si el backend lo manda como texto "1" o número 1
+      if ('rol_id' in usuario && usuario.rol_id != 1) {
+        setError("Acceso denegado. Solo los administradores pueden entrar al panel.");
+        setLoading(false);
+        return; 
+      }
+
+      // ✅ SI PASA LOS CANDADOS: Lo dejamos entrar y guardamos sus datos
       localStorage.setItem("token", token);
       localStorage.setItem("usuario", JSON.stringify(usuario));
 
@@ -45,9 +62,8 @@ function LoginPage() {
       navigate("/dashboard");
     } catch (err) {
       console.error("Error de login:", err);
-      // Tip: Si el backend local usa texto plano para admin123, 
-      // asegúrate de que no falle por encriptación.
-      setError("Credenciales incorrectas o el servidor local no responde.");
+      const mensajeError = err.response?.data?.error || "Credenciales incorrectas o el servidor local no responde.";
+      setError(mensajeError);
     } finally {
       setLoading(false);
     }
@@ -102,7 +118,7 @@ function LoginPage() {
                     id="contrasena"
                     type={showPass ? "text" : "password"}
                     className="input"
-                    placeholder="admin123"
+                    placeholder="******"
                     value={contrasena}
                     onChange={(e) => setContrasena(e.target.value)}
                     required

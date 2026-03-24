@@ -10,22 +10,72 @@ import EditColmenaPage from "./pages/EditColmenaPage";
 import Crud_usu from "./pages/Crud_usu";
 import ApiariosPage from "./pages/ApiariosPage";
 
+// 🛡️ Importamos a nuestro guardia de seguridad
+import ProtectedRoute from "./pages/ProtectedRoute"; 
+
 function App() {
   return (
     <Router>
       <Routes>
 
-        {/* Rutas principales */}
+        {/* 🚪 RUTA PÚBLICA: La puerta de entrada (Cualquiera puede ver el Login) */}
         <Route path="/" element={<LoginPage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/colmenas" element={<ColmenasPage />} />
-        <Route path="/colmena/:id" element={<ColmenaDetallePage />} />
-        <Route path="/cuenta" element={<Cuenta />} /> 
-        <Route path="/sensores" element={<Sensores />} />
-        <Route path="/colmenas/crear" element={<CreateColmenaPage />} />
-        <Route path="/colmenas/editar/:id" element={<EditColmenaPage />} />
-        <Route path="/usuarios" element={<Crud_usu />} />
-        <Route path="/apiarios" element={<ApiariosPage />} />
+
+        {/* 🔒 RUTAS PROTEGIDAS: Si no tienen sesión o no son admin, los patea de regreso al Login */}
+        <Route path="/dashboard" element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/colmenas" element={
+          <ProtectedRoute>
+            <ColmenasPage />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/colmena/:id" element={
+          <ProtectedRoute>
+            <ColmenaDetallePage />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/cuenta" element={
+          <ProtectedRoute>
+            <Cuenta />
+          </ProtectedRoute>
+        } /> 
+        
+        <Route path="/sensores" element={
+          <ProtectedRoute>
+            <Sensores />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/colmenas/crear" element={
+          <ProtectedRoute>
+            <CreateColmenaPage />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/colmenas/editar/:id" element={
+          <ProtectedRoute>
+            <EditColmenaPage />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/usuarios" element={
+          <ProtectedRoute>
+            <Crud_usu />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/apiarios" element={
+          <ProtectedRoute>
+            <ApiariosPage />
+          </ProtectedRoute>
+        } />
+
       </Routes>
     </Router>
   );

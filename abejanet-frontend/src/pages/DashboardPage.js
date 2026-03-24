@@ -117,6 +117,28 @@ export default function DashboardPage() {
           </article>
         </section>
 
+        {/* ==== FOOTER ==== */}
+        <footer style={{
+          marginTop: 'auto', // Empuja el footer hacia abajo
+          paddingTop: '20px',
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '15px',
+          color: '#888',
+          fontSize: '0.85rem'
+        }}>
+          <span>&copy; {new Date().getFullYear()} AbejaNet. Todos los derechos reservados.</span>
+          <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+            <span>📧 Soporte: <a href="mailto:soporte@abejanet.com" style={{ color: '#ffe600', textDecoration: 'none' }}>soporte@abejanet.com</a></span>
+            <span style={{ background: 'rgba(255,255,255,0.05)', padding: '4px 8px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>
+              v3.5.0
+            </span>
+          </div>
+        </footer>
+
       </main>
     </div>
   );
