@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import API_BASE_URL from "../api";
 import Sidebar from "./Sidebar"; 
 import "./Sensores.css"; 
 import "./Cuenta.css"; 
 
 export default function Cuenta() {
-  const navigate = useNavigate();
   const [usuario, setUsuario] = useState(null);
   const [editando, setEditando] = useState(false);
   const [formData, setFormData] = useState({});

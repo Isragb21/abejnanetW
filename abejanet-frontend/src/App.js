@@ -7,7 +7,7 @@ import Cuenta from "./pages/cuenta";
 import Sensores from "./pages/Sensores"; 
 import CreateColmenaPage from "./pages/CreateColmenaPage";
 import EditColmenaPage from "./pages/EditColmenaPage"; 
-import Crud_usu from "./pages/Crud_usu";
+import CrudUsu from "./pages/Crud_usu";
 import ApiariosPage from "./pages/ApiariosPage";
 
 // 🛡️ Importamos a nuestro guardia de seguridad
@@ -66,7 +66,7 @@ function App() {
         
         <Route path="/usuarios" element={
           <ProtectedRoute>
-            <Crud_usu />
+            <CrudUsu />
           </ProtectedRoute>
         } />
         

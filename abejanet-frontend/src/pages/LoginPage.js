@@ -83,7 +83,7 @@ function LoginPage() {
       }
 
       // 🛑 CANDADO 2: ¿El usuario no es administrador?
-      if ('rol_id' in usuario && usuario.rol_id != 1) {
+      if ('rol_id' in usuario && usuario.rol_id !== 1) {
         setError("Acceso denegado. Solo los administradores pueden entrar al panel.");
         setStep(1);
         return; 
