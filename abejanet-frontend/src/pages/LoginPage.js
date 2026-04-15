@@ -6,6 +6,23 @@ import "./LoginPage.css";
 import logo from "../assets/abeja_logo.png";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
+const getApiErrorMessage = (err, fallbackMessage) => {
+  if (!err?.response) {
+    return "No se pudo conectar con el servidor. Verifica que el backend esté disponible.";
+  }
+
+  const status = err.response.status;
+  const backendMessage = err.response?.data?.error || err.response?.data?.mensaje;
+
+  if (status === 400) return backendMessage || "Solicitud inválida. Revisa los datos enviados.";
+  if (status === 401) return backendMessage || "Correo o contraseña incorrectos.";
+  if (status === 403) return backendMessage || "No tienes permisos para realizar esta acción.";
+  if (status === 404) return backendMessage || "Recurso no encontrado en el servidor.";
+  if (status >= 500) return "Error interno del servidor. Intenta nuevamente en unos minutos.";
+
+  return backendMessage || fallbackMessage;
+};
+
 function LoginPage() {
   // Estados normales del login
   const [correo, setCorreo] = useState("");
@@ -51,7 +68,7 @@ function LoginPage() {
 
     } catch (err) {
       console.error("Error de login:", err);
-      const mensajeError = err.response?.data?.error || "Credenciales incorrectas o el servidor no responde.";
+      const mensajeError = getApiErrorMessage(err, "No fue posible iniciar sesión.");
       setError(mensajeError);
     } finally {
       setLoading(false);
@@ -102,7 +119,7 @@ function LoginPage() {
       navigate("/dashboard");
     } catch (err) {
       console.error("Error 2FA:", err);
-      const mensajeError = err.response?.data?.error || "Código incorrecto o expirado.";
+      const mensajeError = getApiErrorMessage(err, "No fue posible validar el código de seguridad.");
       setError(mensajeError);
     } finally {
       setLoading(false);
@@ -231,7 +248,7 @@ function LoginPage() {
                       style={{ letterSpacing: "5px", fontSize: "1.2rem", textAlign: "center", fontWeight: "bold" }}
                       placeholder="123456"
                       value={token2FA}
-                      onChange={(e) => setToken2FA(e.target.value.replace(/\D/g, ''))} // Solo permite números
+                      onChange={(e) => setToken2FA(e.target.value.replaceAll(/\D/g, ""))} // Solo permite números
                       required
                     />
                   </div>

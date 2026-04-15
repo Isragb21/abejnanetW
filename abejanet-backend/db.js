@@ -7,14 +7,17 @@ console.log("DB_HOST:", process.env.DB_HOST);
 console.log("DB_USER:", process.env.DB_USER);
 console.log("DB_NAME:", process.env.DB_NAME);
 
+const dbHost = (process.env.DB_HOST || "").trim().toLowerCase();
+const isLocalDbHost = ["localhost", "127.0.0.1", "::1"].includes(dbHost);
+
 const pool = new Pool({
   host: process.env.DB_HOST,
   port: process.env.DB_PORT || 5432,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  // MODIFICACIÓN AQUÍ: Solo usa SSL si NO estás en localhost o si la base de datos lo exige
-  ssl: process.env.DB_HOST === 'localhost' ? false : { rejectUnauthorized: false },
+  // Solo usa SSL cuando la BD no es local.
+  ssl: isLocalDbHost ? false : { rejectUnauthorized: false },
 
   // Opciones del pool
   max: 10,
