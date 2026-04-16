@@ -10,6 +10,14 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.get("/", (_req, res) => {
+  res.status(200).send("AbejaNet API activa. Usa /api/health para validar el servicio.");
+});
+
+app.get("/api/health", (_req, res) => {
+  res.status(200).json({ status: "ok", service: "AbejaNet API" });
+});
+
 const dbHost = (process.env.DB_HOST || "").trim().toLowerCase();
 const isLocalDbHost = ["localhost", "127.0.0.1", "::1"].includes(dbHost);
 
