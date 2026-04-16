@@ -6,7 +6,13 @@ import "./LoginPage.css";
 import logo from "../assets/abeja_logo.png";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
+const REQUEST_TIMEOUT_MS = 60000;
+
 const getApiErrorMessage = (err, fallbackMessage) => {
+  if (err?.code === "ECONNABORTED") {
+    return "La solicitud tardó demasiado. Revisa tu conexión e inténtalo de nuevo.";
+  }
+
   if (!err?.response) {
     return "No se pudo conectar con el servidor. Verifica que el backend esté disponible.";
   }
@@ -57,6 +63,8 @@ function LoginPage() {
       const res = await axios.post(`${API_BASE_URL}/login`, {
         correo_electronico: correo,
         contrasena,
+      }, {
+        timeout: REQUEST_TIMEOUT_MS,
       });
 
       // Si la contraseña es correcta, el servidor nos dirá si requiere 2FA
@@ -88,6 +96,8 @@ function LoginPage() {
         correo_electronico: correo,
         token_2fa: token2FA,
         tempSecret: tempSecret // Solo se envía la primera vez
+      }, {
+        timeout: REQUEST_TIMEOUT_MS,
       });
 
       const { token, usuario } = res.data;
