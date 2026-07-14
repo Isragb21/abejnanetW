@@ -17,10 +17,10 @@ export default function Sidebar() {
   ];
 
   const handleLogout = () => {
-    // Si usas localStorage para el token, lo borramos aquí
-    // localStorage.removeItem("abejanet-token-v3");
-    // localStorage.removeItem("usuario");
-    navigate("/"); // Regresamos al login
+    localStorage.removeItem("token");
+    localStorage.removeItem("usuario");
+    localStorage.removeItem("abejanet_email");
+    navigate("/");
   };
 
   return (

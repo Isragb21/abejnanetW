@@ -298,6 +298,39 @@ app.delete("/api/colmenas/:id", async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+app.get("/api/colmenas/:id/detalle", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const colmenaResult = await pool.query(
+      `SELECT c.*, a.nombre AS apiario
+       FROM colmenas c
+       LEFT JOIN apiarios a ON c.apiario_id = a.id
+       WHERE c.id = $1`,
+      [id]
+    );
+    if (colmenaResult.rows.length === 0) {
+      return res.status(404).json({ error: "Colmena no encontrada" });
+    }
+
+    const lecturasResult = await pool.query(
+      `SELECT l.*, s.tipo_sensor
+       FROM lecturas_ambientales l
+       JOIN sensores s ON s.id = l.sensor_id
+       WHERE s.colmena_id = $1
+       ORDER BY l.fecha_registro DESC`,
+      [id]
+    );
+
+    res.json({
+      colmena: colmenaResult.rows[0],
+      lecturas: lecturasResult.rows,
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ==========================================
 // 5. CRUD SENSORES
 // ==========================================
@@ -322,11 +355,11 @@ app.get("/api/sensores/:id", async (req, res) => {
 });
 
 app.post("/api/sensores", async (req, res) => {
-  const { mac_address, colmena_id, tipo_sensor, estado } = req.body;
+  const { mac_address, colmena_id, tipo_sensor, estado, fecha_instalacion } = req.body;
   try {
     const result = await pool.query(
-      "INSERT INTO sensores (mac_address, colmena_id, tipo_sensor, estado) VALUES ($1, $2, $3, $4) RETURNING *",
-      [mac_address, colmena_id, tipo_sensor, estado]
+      "INSERT INTO sensores (mac_address, colmena_id, tipo_sensor, estado, fecha_instalacion) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+      [mac_address, colmena_id, tipo_sensor, estado, fecha_instalacion || null]
     );
     res.json(result.rows[0]);
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -334,11 +367,11 @@ app.post("/api/sensores", async (req, res) => {
 
 app.put("/api/sensores/:id", async (req, res) => {
   const { id } = req.params;
-  const { mac_address, colmena_id, tipo_sensor, estado } = req.body;
+  const { mac_address, colmena_id, tipo_sensor, estado, fecha_instalacion } = req.body;
   try {
     const result = await pool.query(
-      "UPDATE sensores SET mac_address = $1, colmena_id = $2, tipo_sensor = $3, estado = $4 WHERE id = $5 RETURNING *",
-      [mac_address, colmena_id, tipo_sensor, estado, id]
+      "UPDATE sensores SET mac_address = $1, colmena_id = $2, tipo_sensor = $3, estado = $4, fecha_instalacion = $5 WHERE id = $6 RETURNING *",
+      [mac_address, colmena_id, tipo_sensor, estado, fecha_instalacion || null, id]
     );
     res.json(result.rows[0]);
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -349,6 +382,147 @@ app.delete("/api/sensores/:id", async (req, res) => {
     await pool.query("DELETE FROM sensores WHERE id = $1", [req.params.id]);
     res.json({ message: "Sensor eliminado" });
   } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ==========================================
+// 6. LECTURAS AMBIENTALES
+// ==========================================
+app.post("/api/lecturas", async (req, res) => {
+  try {
+    const { sensor_id, temperatura, humedad, peso, sonido, lluvia } = req.body;
+    if (!sensor_id) return res.status(400).json({ error: "sensor_id es requerido" });
+    if (temperatura === undefined || temperatura === null) {
+      return res.status(400).json({ error: "temperatura es requerida" });
+    }
+
+    const sensorResult = await pool.query("SELECT id FROM sensores WHERE id = $1", [sensor_id]);
+    if (sensorResult.rows.length === 0) {
+      return res.status(404).json({ error: "Sensor no encontrado" });
+    }
+
+    const lluviaVal =
+      lluvia === true || lluvia === 1 || lluvia === "1" ? 1
+      : lluvia === false || lluvia === 0 || lluvia === "0" ? 0
+      : null;
+
+    const result = await pool.query(
+      `INSERT INTO lecturas_ambientales (sensor_id, humedad, temperatura, peso, sonido, lluvia)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING *`,
+      [
+        parseInt(sensor_id),
+        humedad != null ? parseFloat(humedad) : null,
+        parseFloat(temperatura),
+        peso != null ? parseFloat(peso) : null,
+        sonido != null ? parseFloat(sonido) : null,
+        lluviaVal,
+      ]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.get("/api/lecturas", async (req, res) => {
+  try {
+    const { sensor_id, colmena_id } = req.query;
+    let query = `
+      SELECT l.*, s.tipo_sensor, s.colmena_id
+      FROM lecturas_ambientales l
+      JOIN sensores s ON s.id = l.sensor_id
+    `;
+    const conditions = [];
+    const values = [];
+    if (sensor_id) {
+      values.push(sensor_id);
+      conditions.push(`l.sensor_id = $${values.length}`);
+    }
+    if (colmena_id) {
+      values.push(colmena_id);
+      conditions.push(`s.colmena_id = $${values.length}`);
+    }
+    if (conditions.length) query += " WHERE " + conditions.join(" AND ");
+    query += " ORDER BY l.fecha_registro DESC";
+    const result = await pool.query(query, values);
+    res.json(result.rows);
+  } catch (e) {
+    res.status(500).json([]);
+  }
+});
+
+// ==========================================
+// 7. REPORTES
+// ==========================================
+app.get("/api/reportes/resumen", async (req, res) => {
+  try {
+    const { desde, hasta, apiarioId, colmenaId } = req.query;
+    if (!desde || !hasta) return res.status(400).json({ error: "desde y hasta son requeridos" });
+
+    const from = desde + " 00:00:00";
+    const to = hasta + " 23:59:59";
+    const conditions = ["1=1"];
+    const baseValues = [];
+
+    if (apiarioId) { baseValues.push(apiarioId); conditions.push(`c.apiario_id = $${baseValues.length}`); }
+    if (colmenaId) { baseValues.push(colmenaId); conditions.push(`c.id = $${baseValues.length}`); }
+    const whereClause = " WHERE " + conditions.join(" AND ");
+
+    const activas = await pool.query(
+      `SELECT COUNT(DISTINCT c.id) AS n
+       FROM lecturas_ambientales l
+       JOIN sensores s ON s.id = l.sensor_id
+       JOIN colmenas c ON c.id = s.colmena_id
+       ${whereClause}
+       AND l.fecha_registro BETWEEN $${baseValues.length + 1} AND $${baseValues.length + 2}`,
+      [...baseValues, from, to]
+    );
+
+    const promPeso = await pool.query(
+      `SELECT AVG(l.peso) AS prom
+       FROM lecturas_ambientales l
+       JOIN sensores s ON s.id = l.sensor_id
+       JOIN colmenas c ON c.id = s.colmena_id
+       ${whereClause}
+       AND l.fecha_registro BETWEEN $${baseValues.length + 1} AND $${baseValues.length + 2}`,
+      [...baseValues, from, to]
+    );
+
+    res.json({
+      activas: Number(activas.rows[0]?.n) || 0,
+      promPeso: Number(promPeso.rows[0]?.prom) || 0,
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.get("/api/reportes/serie-peso", async (req, res) => {
+  try {
+    const { desde, hasta, colmenaId } = req.query;
+    if (!desde || !hasta) return res.status(400).json({ error: "desde y hasta son requeridos" });
+
+    const conditions = ["1=1"];
+    const values = [];
+    if (colmenaId) { values.push(colmenaId); conditions.push(`c.id = $${values.length}`); }
+    const idxFrom = values.length + 1;
+    const idxTo = values.length + 2;
+    values.push(desde + " 00:00:00", hasta + " 23:59:59");
+
+    const result = await pool.query(
+      `SELECT to_char(l.fecha_registro, 'YYYY-MM-DD HH24:MI') AS fecha, c.nombre AS colmena, l.peso
+       FROM lecturas_ambientales l
+       JOIN sensores s ON s.id = l.sensor_id
+       JOIN colmenas c ON c.id = s.colmena_id
+       WHERE ${conditions.join(" AND ")}
+       AND l.fecha_registro BETWEEN $${idxFrom} AND $${idxTo}
+       ORDER BY l.fecha_registro`,
+      values
+    );
+    res.json(result.rows);
+  } catch (e) {
+    res.status(500).json({ error: "Error del servidor" });
+  }
 });
 
 // ==========================================

@@ -73,10 +73,16 @@ export default function Apiarios() {
       ? `${API_BASE_URL}/apiarios/${editing}`
       : `${API_BASE_URL}/apiarios`;
 
+    const payload = { ...formData };
+    if (!editing) {
+      const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
+      payload.creado_por_usuario_id = usuario.id || null;
+    }
+
     fetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
+      body: JSON.stringify(payload),
     })
       .then(async (res) => {
         if (!res.ok) {

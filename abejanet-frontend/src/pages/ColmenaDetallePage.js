@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useParams, Link } from "react-router-dom";
 import API_BASE_URL from "../api";
+import Sidebar from "./Sidebar";
 
 import {
   LineChart,
@@ -173,6 +174,8 @@ export default function ColmenaDetallePage() {
 
   return (
     <div className="sensores-layout">
+
+      <Sidebar />
 
       <main className="sensores-main">
         <div className="detalle-colmena-page">

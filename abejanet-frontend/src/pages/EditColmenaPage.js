@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import API_BASE_URL from "../api"; // 👈 Importamos la URL centralizada
-import "./CreateColmenaPage.css"; 
+import API_BASE_URL from "../api";
+import Sidebar from "./Sidebar";
+import "./CreateColmenaPage.css";
+import "./Sensores.css"; 
 
 export default function EditColmenaPage() {
   const { id } = useParams();
@@ -129,99 +131,109 @@ export default function EditColmenaPage() {
 
   if (loading) {
     return (
-      <div className="create-colmena-root">
-        <div className="create-colmena-shell">
-          <header className="create-colmena-header">
-            <div>
-              <h2>✏️ Editar colmena</h2>
-              <p className="create-colmena-sub">Cargando información local…</p>
-            </div>
-            <Link to="/colmenas" className="crumb-link">← Volver</Link>
-          </header>
-          <div className="create-colmena-layout">
-            <div className="create-colmena-form-card">
-              <div className="alert"><p>Cargando datos desde la base de datos local…</p></div>
+      <div className="sensores-layout">
+        <Sidebar />
+        <main className="sensores-main">
+          <div className="create-colmena-root">
+            <div className="create-colmena-shell">
+              <header className="create-colmena-header">
+                <div>
+                  <h2>✏️ Editar colmena</h2>
+                  <p className="create-colmena-sub">Cargando información local…</p>
+                </div>
+                <Link to="/colmenas" className="crumb-link">← Volver</Link>
+              </header>
+              <div className="create-colmena-layout">
+                <div className="create-colmena-form-card">
+                  <div className="alert"><p>Cargando datos desde la base de datos local…</p></div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        </main>
       </div>
     );
   }
 
   return (
-    <div className="create-colmena-root">
-      <div className="create-colmena-shell">
-        <header className="create-colmena-header">
-          <div>
-            <h2>✏️ Editar colmena #{id}</h2>
-            <p className="create-colmena-sub">
-              Actualiza el nombre, apiario o notas. Los datos históricos se conservan en PostgreSQL local.
-            </p>
+    <div className="sensores-layout">
+      <Sidebar />
+      <main className="sensores-main">
+        <div className="create-colmena-root">
+          <div className="create-colmena-shell">
+            <header className="create-colmena-header">
+              <div>
+                <h2>✏️ Editar colmena #{id}</h2>
+                <p className="create-colmena-sub">
+                  Actualiza el nombre, apiario o notas. Los datos históricos se conservan en PostgreSQL local.
+                </p>
+              </div>
+              <Link to="/colmenas" className="crumb-link">← Volver a colmenas</Link>
+            </header>
+
+            <div className="create-colmena-layout">
+              <form onSubmit={handleSubmit} className="create-colmena-form-card">
+                <label className="form-field">
+                  <span>Apiario *</span>
+                  <select
+                    name="apiario_id"
+                    value={form.apiario_id}
+                    onChange={handleChange}
+                    required
+                    disabled={loadingApiarios}
+                  >
+                    <option value="">Selecciona un apiario…</option>
+                    {apiarios.map((a) => (
+                      <option key={a.id} value={a.id}>{a.nombre}</option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="form-field">
+                  <span>Nombre de la colmena *</span>
+                  <input
+                    type="text"
+                    name="nombre"
+                    placeholder="Ej. Colmena Norte 1"
+                    value={form.nombre}
+                    onChange={handleChange}
+                    required
+                  />
+                </label>
+
+                <label className="form-field">
+                  <span>Descripción (opcional)</span>
+                  <textarea
+                    name="descripcion_especifica"
+                    rows="4"
+                    placeholder="Detalles o notas de esta colmena..."
+                    value={form.descripcion_especifica}
+                    onChange={handleChange}
+                  />
+                </label>
+
+                {errorMsg && <div className="alert error"><p>{errorMsg}</p></div>}
+                {successMsg && <div className="alert success"><p>{successMsg}</p></div>}
+
+                <div className="form-actions" style={{ gap: 10 }}>
+                  <Link to="/colmenas" className="crumb-link" style={{ padding: "8px 12px" }}>Cancelar</Link>
+                  <button type="submit" disabled={saving || !isValid}>
+                    {saving ? "Guardando..." : "Guardar cambios"}
+                  </button>
+                </div>
+              </form>
+
+              <aside className="create-colmena-aside">
+                <h3>🔁 Organización</h3>
+                <p>Puedes mover esta colmena de apiario sin perder sus lecturas de sensores.</p>
+                <div className="create-colmena-meta">
+                  <p>Los cambios se verán reflejados inmediatamente en el dashboard local.</p>
+                </div>
+              </aside>
+            </div>
           </div>
-          <Link to="/colmenas" className="crumb-link">← Volver a colmenas</Link>
-        </header>
-
-        <div className="create-colmena-layout">
-          <form onSubmit={handleSubmit} className="create-colmena-form-card">
-            <label className="form-field">
-              <span>Apiario *</span>
-              <select
-                name="apiario_id"
-                value={form.apiario_id}
-                onChange={handleChange}
-                required
-                disabled={loadingApiarios}
-              >
-                <option value="">Selecciona un apiario…</option>
-                {apiarios.map((a) => (
-                  <option key={a.id} value={a.id}>{a.nombre}</option>
-                ))}
-              </select>
-            </label>
-
-            <label className="form-field">
-              <span>Nombre de la colmena *</span>
-              <input
-                type="text"
-                name="nombre"
-                placeholder="Ej. Colmena Norte 1"
-                value={form.nombre}
-                onChange={handleChange}
-                required
-              />
-            </label>
-
-            <label className="form-field">
-              <span>Descripción (opcional)</span>
-              <textarea
-                name="descripcion_especifica"
-                rows="4"
-                placeholder="Detalles o notas de esta colmena..."
-                value={form.descripcion_especifica}
-                onChange={handleChange}
-              />
-            </label>
-
-            {errorMsg && <div className="alert error"><p>{errorMsg}</p></div>}
-            {successMsg && <div className="alert success"><p>{successMsg}</p></div>}
-
-            <div className="form-actions" style={{ gap: 10 }}>
-              <Link to="/colmenas" className="crumb-link" style={{ padding: "8px 12px" }}>Cancelar</Link>
-              <button type="submit" disabled={saving || !isValid}>
-                {saving ? "Guardando..." : "Guardar cambios"}
-              </button>
-            </div>
-          </form>
-
-          <aside className="create-colmena-aside">
-            <h3>🔁 Organización</h3>
-            <p>Puedes mover esta colmena de apiario sin perder sus lecturas de sensores.</p>
-            <div className="create-colmena-meta">
-              <p>Los cambios se verán reflejados inmediatamente en el dashboard local.</p>
-            </div>
-          </aside>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
