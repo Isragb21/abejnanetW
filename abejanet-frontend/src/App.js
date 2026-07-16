@@ -9,6 +9,7 @@ import CreateColmenaPage from "./pages/CreateColmenaPage";
 import EditColmenaPage from "./pages/EditColmenaPage"; 
 import CrudUsu from "./pages/Crud_usu";
 import ApiariosPage from "./pages/ApiariosPage";
+import ReportesPage from "./pages/ReportesPage";
 
 // 🛡️ Importamos a nuestro guardia de seguridad
 import ProtectedRoute from "./pages/ProtectedRoute"; 
@@ -73,6 +74,12 @@ function App() {
         <Route path="/apiarios" element={
           <ProtectedRoute>
             <ApiariosPage />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/reportes" element={
+          <ProtectedRoute>
+            <ReportesPage />
           </ProtectedRoute>
         } />
 

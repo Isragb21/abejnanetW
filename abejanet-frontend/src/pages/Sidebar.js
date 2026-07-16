@@ -12,6 +12,7 @@ export default function Sidebar() {
     { path: "/apiarios", icon: "🏷️", label: "Apiarios" },
     { path: "/colmenas", icon: "🍯", label: "Colmenas" },
     { path: "/sensores", icon: "📡", label: "Sensores" },
+    { path: "/reportes", icon: "📊", label: "Reportes" },
     { path: "/usuarios", icon: "👥", label: "Usuarios" },
     { path: "/cuenta", icon: "👤", label: "Mi Cuenta" },
   ];
