@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  CartesianGrid, Legend, AreaChart, Area
+  CartesianGrid, AreaChart, Area
 } from "recharts";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
