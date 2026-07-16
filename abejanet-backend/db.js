@@ -16,8 +16,10 @@ const pool = new Pool({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  // Solo usa SSL cuando la BD no es local.
-  ssl: isLocalDbHost ? false : { rejectUnauthorized: false },
+  // Requerido por Supabase
+  ssl: {
+    rejectUnauthorized: false
+  },
 
   // Opciones del pool
   max: 10,
