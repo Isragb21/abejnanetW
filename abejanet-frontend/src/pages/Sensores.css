@@ -11,11 +11,12 @@
 
 .sensores-main {
   flex: 1;
-  padding: 28px 40px 40px;
+  padding: 28px 32px 40px;
   display: flex;
   flex-direction: column;
   gap: 20px;
   width: 100%;
+  min-width: 0;
 }
 
 .sensores-header {

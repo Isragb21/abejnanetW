@@ -55,34 +55,69 @@
 
 .reportes-stats-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 12px;
-  margin-bottom: 20px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 900px) {
+  .reportes-stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 500px) {
+  .reportes-stats-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 .reporte-stat-card {
-  background: #1a1a2e;
-  border: 1px solid #333;
-  border-radius: 10px;
-  padding: 14px;
+  background: #111118;
+  border-left: 4px solid var(--card-accent, #ffe600);
+  border-radius: 12px;
+  padding: 18px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.reporte-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.reporte-stat-icon {
+  font-size: 1.6rem;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  flex-shrink: 0;
+}
+
+.reporte-stat-body {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
+  gap: 2px;
 }
 
 .reporte-stat-label {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: #888;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 4px;
+  letter-spacing: 0.6px;
+  font-weight: 600;
 }
 
 .reporte-stat-value {
-  font-size: 1.3rem;
+  font-size: 1.35rem;
   font-weight: 700;
-  color: #ffe600;
+  color: var(--card-accent, #ffe600);
 }
 
 .reportes-pdf-header {
@@ -111,4 +146,16 @@
 
 .reportes-printable {
   background: transparent;
+  width: 100%;
+}
+
+.reportes-printable .sensores-card {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.reportes-grid .sensores-card {
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }

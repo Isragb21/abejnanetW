@@ -31,13 +31,16 @@ function formatFechaCorta(ms) {
   });
 }
 
-function StatCard({ label, value, unit }) {
+function StatCard({ label, value, unit, color, icon }) {
   return (
-    <div className="reporte-stat-card">
-      <span className="reporte-stat-label">{label}</span>
-      <span className="reporte-stat-value">
-        {value !== null && value !== undefined ? `${value}${unit || ""}` : "—"}
-      </span>
+    <div className="reporte-stat-card" style={{ "--card-accent": color || "#ffe600" }}>
+      <div className="reporte-stat-icon">{icon || ""}</div>
+      <div className="reporte-stat-body">
+        <span className="reporte-stat-label">{label}</span>
+        <span className="reporte-stat-value">
+          {value !== null && value !== undefined ? `${value}${unit || ""}` : "—"}
+        </span>
+      </div>
     </div>
   );
 }
@@ -217,12 +220,12 @@ export default function ReportesPage() {
             <>
               {/* KPIs */}
               <div className="reportes-stats-row">
-                <StatCard label="Lecturas totales" value={stats.total} />
-                <StatCard label="Peso promedio" value={stats.pesoProm?.toFixed(2)} unit=" kg" />
-                <StatCard label="Temp. promedio" value={stats.tempProm?.toFixed(1)} unit="°C" />
-                <StatCard label="Humedad promedio" value={stats.humProm?.toFixed(1)} unit="%" />
-                <StatCard label="Peso máx" value={stats.pesoMax?.toFixed(2)} unit=" kg" />
-                <StatCard label="Peso mín" value={stats.pesoMin?.toFixed(2)} unit=" kg" />
+                <StatCard label="Lecturas totales" value={stats.total} color="#ffe600" icon="📊" />
+                <StatCard label="Peso promedio" value={stats.pesoProm?.toFixed(2)} unit=" kg" color="#8bc34a" icon="⚖️" />
+                <StatCard label="Temp. promedio" value={stats.tempProm?.toFixed(1)} unit="°C" color="#ff5722" icon="🌡️" />
+                <StatCard label="Humedad promedio" value={stats.humProm?.toFixed(1)} unit="%" color="#03a9f4" icon="💧" />
+                <StatCard label="Peso máx" value={stats.pesoMax?.toFixed(2)} unit=" kg" color="#66bb6a" icon="▲" />
+                <StatCard label="Peso mín" value={stats.pesoMin?.toFixed(2)} unit=" kg" color="#ef5350" icon="▼" />
               </div>
 
               {/* GRÁFICAS */}
