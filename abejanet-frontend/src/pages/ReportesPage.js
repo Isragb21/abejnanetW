@@ -117,27 +117,71 @@ export default function ReportesPage() {
   const handleDescargarPDF = async () => {
     if (!reportRef.current) return;
     setGeneratingPdf(true);
+
     try {
-      const canvas = await html2canvas(reportRef.current, {
-        backgroundColor: "#121212",
-        scale: 2,
-        useCORS: true,
-        logging: false,
+      const doc = new jsPDF("l", "mm", "a4");
+      
+      // 1. Título y Header
+      doc.setFontSize(18);
+      doc.text("Reporte de Lecturas - AbejaNet", 15, 20);
+      doc.setFontSize(12);
+      doc.text(`Colmena: ${nombreColmena}`, 15, 30);
+      doc.text(`Período: ${rangoActivo > 0 ? `Últimos ${rangoActivo} días` : `${fechaDesde || "Inicio"} al ${fechaHasta || "Hoy"}`}`, 15, 37);
+      doc.text(`Generado: ${fechaGeneracion}`, 15, 44);
+      doc.line(15, 48, 280, 48);
+
+      // 2. Tabla de estadísticas (Resumen)
+      doc.setFontSize(14);
+      doc.text("Resumen de Métricas", 15, 60);
+      doc.setFontSize(10);
+      const statsData = [
+        ["Total Lecturas", stats.total],
+        ["Peso Promedio", `${stats.pesoProm?.toFixed(2)} kg`],
+        ["Temp. Promedio", `${stats.tempProm?.toFixed(1)} °C`],
+        ["Humedad Prom.", `${stats.humProm?.toFixed(1)} %`],
+        ["Peso Máx.", `${stats.pesoMax?.toFixed(2)} kg`],
+        ["Peso Mín.", `${stats.pesoMin?.toFixed(2)} kg`]
+      ];
+      
+      let y = 70;
+      statsData.forEach(([label, value]) => {
+        doc.text(`${label}:`, 20, y);
+        doc.text(`${value}`, 60, y);
+        y += 8;
       });
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("l", "mm", "a4");
-      const pdfW = pdf.internal.pageSize.getWidth();
-      const pdfH = pdf.internal.pageSize.getHeight();
-      const imgW = canvas.width;
-      const imgH = canvas.height;
-      const ratio = Math.min(pdfW / imgW, pdfH / imgH);
-      const w = imgW * ratio;
-      const h = imgH * ratio;
-      pdf.addImage(imgData, "PNG", 0, 0, w, h);
-      pdf.save(`Reporte_AbejaNet_${nombreColmena.replace(/\s+/g, "_")}_${new Date().toISOString().slice(0, 10)}.pdf`);
+
+      // 3. Gráficas (Capturamos secciones)
+      // Como no tenemos plugin de tablas complejo, agregaremos las tablas de lecturas aquí
+      doc.addPage();
+      doc.setFontSize(14);
+      doc.text("Detalle de Lecturas", 15, 20);
+      
+      doc.setFontSize(8);
+      let tableY = 30;
+      doc.text("Fecha", 15, tableY);
+      doc.text("Temp", 50, tableY);
+      doc.text("Hum", 70, tableY);
+      doc.text("Peso", 90, tableY);
+      doc.text("Sonido", 110, tableY);
+      doc.text("Lluvia", 130, tableY);
+      doc.line(15, tableY + 2, 150, tableY + 2);
+      
+      tableY += 8;
+      lecturasFiltradas.slice().reverse().slice(0, 25).forEach(l => {
+        if (tableY > 190) { doc.addPage(); tableY = 20; }
+        doc.text(new Date(l.fecha_registro).toLocaleString("es-MX"), 15, tableY);
+        doc.text(l.temperatura != null ? `${l.temperatura}°C` : "—", 50, tableY);
+        doc.text(l.humedad != null ? `${l.humedad}%` : "—", 70, tableY);
+        doc.text(l.peso != null ? `${l.peso} kg` : "—", 90, tableY);
+        doc.text(l.sonido != null ? `${l.sonido} dB` : "—", 110, tableY);
+        doc.text(l.lluvia ? "Sí" : "No", 130, tableY);
+        tableY += 6;
+      });
+
+      doc.save(`Reporte_AbejaNet_${nombreColmena.replace(/\s+/g, "_")}.pdf`);
     } catch (err) {
       console.error("Error generando PDF:", err);
-      alert("Error al generar el PDF. Intenta de nuevo.");
+      alert("Error al generar el PDF.");
     } finally {
       setGeneratingPdf(false);
     }
