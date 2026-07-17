@@ -125,6 +125,122 @@ export default function ReportesPage() {
       const margin = 15;
       const contentW = pageW - margin * 2;
 
+      const drawChart = (doc, data, dataKey, title, color, x0, y0, w, h) => {
+        const values = data.filter(d => d[dataKey] != null).map(d => parseFloat(d[dataKey]));
+        if (values.length < 2) return;
+        const min = Math.min(...values) * 0.95;
+        const max = Math.max(...values) * 1.05;
+        const range = max - min || 1;
+        const padL = 18;
+        const padR = 5;
+        const padT = 10;
+        const padB = 12;
+        const gW = w - padL - padR;
+        const gH = h - padT - padB;
+        const gX = x0 + padL;
+        const gY = y0 + padT;
+
+        doc.setFontSize(9);
+        doc.setTextColor(60);
+        doc.text(title, x0, y0 - 2);
+
+        doc.setDrawColor(220);
+        doc.setLineWidth(0.2);
+        for (let i = 0; i <= 4; i++) {
+          const ly = gY + gH - (i / 4) * gH;
+          doc.line(gX, ly, gX + gW, ly);
+          doc.setFontSize(6);
+          doc.setTextColor(140);
+          doc.text((min + (range * i) / 4).toFixed(1), x0, ly + 1.5);
+        }
+
+        const validData = data.filter(d => d[dataKey] != null);
+        const step = gW / (validData.length - 1);
+        const pts = validData.map((d, i) => ({
+          x: gX + i * step,
+          y: gY + gH - ((parseFloat(d[dataKey]) - min) / range) * gH,
+        }));
+
+        const r = parseInt(color.slice(1, 3), 16);
+        const g = parseInt(color.slice(3, 5), 16);
+        const b = parseInt(color.slice(5, 7), 16);
+
+        doc.setFillColor(r, g, b);
+        doc.setDrawColor(r, g, b);
+        doc.setLineWidth(0.6);
+
+        doc.beginPath();
+        doc.moveTo(pts[0].x, gY + gH);
+        pts.forEach(p => doc.lineTo(p.x, p.y));
+        doc.lineTo(pts[pts.length - 1].x, gY + gH);
+        doc.setFillColor(r, g, b);
+        doc.fill();
+
+        doc.setDrawColor(r, g, b);
+        doc.setLineWidth(0.5);
+        doc.beginPath();
+        doc.moveTo(pts[0].x, pts[0].y);
+        pts.forEach(p => doc.lineTo(p.x, p.y));
+        doc.stroke();
+
+        if (values.length <= 30) {
+          doc.setFillColor(r, g, b);
+          pts.forEach(p => doc.circle(p.x, p.y, 1, "F"));
+        }
+
+        doc.setDrawColor(60);
+        doc.setLineWidth(0.3);
+        doc.line(gX, gY, gX, gY + gH);
+        doc.line(gX, gY + gH, gX + gW, gY + gH);
+      };
+
+      const drawRainChart = (doc, data, x0, y0, w, h) => {
+        const padL = 18;
+        const padR = 5;
+        const padT = 10;
+        const padB = 12;
+        const gW = w - padL - padR;
+        const gH = h - padT - padB;
+        const gX = x0 + padL;
+        const gY = y0 + padT;
+
+        doc.setFontSize(9);
+        doc.setTextColor(60);
+        doc.text("Lluvia", x0, y0 - 2);
+
+        doc.setDrawColor(220);
+        doc.setLineWidth(0.2);
+        doc.line(gX, gY + gH, gX + gW, gY + gH);
+        doc.line(gX, gY, gX + gW, gY);
+
+        doc.setFontSize(6);
+        doc.setTextColor(140);
+        doc.text("Si", x0, gY + 4);
+        doc.text("No", x0, gY + gH + 2);
+
+        const step = gW / (data.length - 1 || 1);
+        doc.setDrawColor(171, 71, 188);
+        doc.setLineWidth(0.6);
+        doc.beginPath();
+        let prevY = gY;
+        data.forEach((d, i) => {
+          const px = gX + i * step;
+          const py = d.lluvia ? gY + 2 : gY + gH - 2;
+          if (i === 0) doc.moveTo(px, py);
+          else {
+            doc.lineTo(px, prevY);
+            doc.lineTo(px, py);
+          }
+          prevY = py;
+        });
+        doc.stroke();
+
+        doc.setDrawColor(60);
+        doc.setLineWidth(0.3);
+        doc.line(gX, gY, gX, gY + gH);
+        doc.line(gX, gY + gH, gX + gW, gY + gH);
+      };
+
       doc.setFillColor(255, 255, 255);
       doc.rect(0, 0, pageW, pageH, "F");
 
@@ -152,7 +268,7 @@ export default function ReportesPage() {
       ];
 
       let y = 55;
-      const cellW = (contentW) / 3;
+      const cellW = contentW / 3;
       statsData.forEach(([label, value], i) => {
         const col = i % 3;
         const row = Math.floor(i / 3);
@@ -168,39 +284,21 @@ export default function ReportesPage() {
         doc.text(value, bx + 4, by + 9.5);
       });
 
-      doc.addPage();
-      doc.setFillColor(255, 255, 255);
-      doc.rect(0, 0, pageW, pageH, "F");
-      doc.setFontSize(16);
-      doc.setTextColor(0);
-      doc.text("Analisis Grafico", margin, 20);
+      if (lecturasFiltradas.length > 1) {
+        doc.addPage();
+        doc.setFillColor(255, 255, 255);
+        doc.rect(0, 0, pageW, pageH, "F");
+        doc.setFontSize(16);
+        doc.setTextColor(0);
+        doc.text("Analisis Grafico", margin, 20);
 
-      const chartCards = document.querySelectorAll(".reportes-grid .sensores-card");
-      const chartW = (contentW - 15) / 2;
-      const chartH = 75;
-      let cx = margin;
-      let cy = 30;
+        const cw = (contentW - 10) / 2;
+        const ch = 78;
 
-      for (let i = 0; i < chartCards.length; i++) {
-        if (i > 0 && i % 2 === 0) {
-          cy += chartH + 15;
-          cx = margin;
-        }
-        if (cy + chartH > pageH - 10) {
-          doc.addPage();
-          doc.setFillColor(255, 255, 255);
-          doc.rect(0, 0, pageW, pageH, "F");
-          doc.setFontSize(16);
-          doc.setTextColor(0);
-          doc.text("Analisis Grafico (cont.)", margin, 20);
-          cy = 30;
-          cx = margin;
-        }
-
-        const canvas = await html2canvas(chartCards[i], { scale: 3, backgroundColor: "#ffffff" });
-        const imgData = canvas.toDataURL("image/png");
-        doc.addImage(imgData, "PNG", cx, cy, chartW, chartH);
-        cx += chartW + 15;
+        drawChart(doc, lecturasFiltradas, "peso", "Peso (kg)", "#8bc34a", margin, 32, cw, ch);
+        drawChart(doc, lecturasFiltradas, "temperatura", "Temperatura (C)", "#ff5722", margin + cw + 10, 32, cw, ch);
+        drawChart(doc, lecturasFiltradas, "humedad", "Humedad (%)", "#03a9f4", margin, 32 + ch + 12, cw, ch);
+        drawRainChart(doc, lecturasFiltradas, margin + cw + 10, 32 + ch + 12, cw, ch);
       }
 
       doc.addPage();
