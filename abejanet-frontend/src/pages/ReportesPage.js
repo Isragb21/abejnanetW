@@ -123,6 +123,7 @@ export default function ReportesPage() {
       const pageW = 297;
       const pageH = 210;
       const margin = 15;
+      const contentW = pageW - margin * 2;
 
       doc.setFillColor(255, 255, 255);
       doc.rect(0, 0, pageW, pageH, "F");
@@ -151,14 +152,14 @@ export default function ReportesPage() {
       ];
 
       let y = 55;
-      const colW = (pageW - margin * 2) / 3;
+      const cellW = (contentW) / 3;
       statsData.forEach(([label, value], i) => {
         const col = i % 3;
         const row = Math.floor(i / 3);
-        const bx = margin + col * colW;
+        const bx = margin + col * cellW;
         const by = y + row * 14;
         doc.setFillColor(240, 240, 240);
-        doc.roundedRect(bx, by, colW - 4, 11, 2, 2, "F");
+        doc.roundedRect(bx, by, cellW - 4, 11, 2, 2, "F");
         doc.setTextColor(80);
         doc.setFontSize(9);
         doc.text(label, bx + 4, by + 5);
@@ -167,16 +168,39 @@ export default function ReportesPage() {
         doc.text(value, bx + 4, by + 9.5);
       });
 
-      const gridElement = document.querySelector(".reportes-grid");
-      if (gridElement) {
-        const canvas = await html2canvas(gridElement, { scale: 3, backgroundColor: "#ffffff" });
+      doc.addPage();
+      doc.setFillColor(255, 255, 255);
+      doc.rect(0, 0, pageW, pageH, "F");
+      doc.setFontSize(16);
+      doc.setTextColor(0);
+      doc.text("Analisis Grafico", margin, 20);
+
+      const chartCards = document.querySelectorAll(".reportes-grid .sensores-card");
+      const chartW = (contentW - 15) / 2;
+      const chartH = 75;
+      let cx = margin;
+      let cy = 30;
+
+      for (let i = 0; i < chartCards.length; i++) {
+        if (i > 0 && i % 2 === 0) {
+          cy += chartH + 15;
+          cx = margin;
+        }
+        if (cy + chartH > pageH - 10) {
+          doc.addPage();
+          doc.setFillColor(255, 255, 255);
+          doc.rect(0, 0, pageW, pageH, "F");
+          doc.setFontSize(16);
+          doc.setTextColor(0);
+          doc.text("Analisis Grafico (cont.)", margin, 20);
+          cy = 30;
+          cx = margin;
+        }
+
+        const canvas = await html2canvas(chartCards[i], { scale: 3, backgroundColor: "#ffffff" });
         const imgData = canvas.toDataURL("image/png");
-        const imgW = pageW - margin * 2;
-        const imgH = (canvas.height / canvas.width) * imgW;
-        doc.setFontSize(14);
-        doc.setTextColor(0);
-        doc.text("Analisis Grafico", margin, y + 40);
-        doc.addImage(imgData, "PNG", margin, y + 45, imgW, imgH);
+        doc.addImage(imgData, "PNG", cx, cy, chartW, chartH);
+        cx += chartW + 15;
       }
 
       doc.addPage();
@@ -203,7 +227,7 @@ export default function ReportesPage() {
 
       doc.setTextColor(0);
       tableY += 10;
-      lecturasFiltradas.slice().reverse().slice(0, 50).forEach((l, idx) => {
+      lecturasFiltradas.slice().reverse().forEach((l, idx) => {
         if (tableY > pageH - 15) {
           doc.addPage();
           doc.setFillColor(255, 255, 255);
