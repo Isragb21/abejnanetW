@@ -4,7 +4,6 @@ import {
   CartesianGrid, AreaChart, Area
 } from "recharts";
 import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 import API_BASE_URL from "../api";
 import Sidebar from "./Sidebar";
 import "./Sensores.css";
@@ -125,16 +124,19 @@ export default function ReportesPage() {
       const margin = 15;
       const contentW = pageW - margin * 2;
 
+      const hexToRgb = (hex) => ({
+        r: parseInt(hex.slice(1, 3), 16),
+        g: parseInt(hex.slice(3, 5), 16),
+        b: parseInt(hex.slice(5, 7), 16),
+      });
+
       const drawChart = (doc, data, dataKey, title, color, x0, y0, w, h) => {
         const values = data.filter(d => d[dataKey] != null).map(d => parseFloat(d[dataKey]));
         if (values.length < 2) return;
         const min = Math.min(...values) * 0.95;
         const max = Math.max(...values) * 1.05;
         const range = max - min || 1;
-        const padL = 18;
-        const padR = 5;
-        const padT = 10;
-        const padB = 12;
+        const padL = 18, padR = 5, padT = 10, padB = 12;
         const gW = w - padL - padR;
         const gH = h - padT - padB;
         const gX = x0 + padL;
@@ -156,36 +158,31 @@ export default function ReportesPage() {
 
         const validData = data.filter(d => d[dataKey] != null);
         const step = gW / (validData.length - 1);
-        const pts = validData.map((d, i) => ({
-          x: gX + i * step,
-          y: gY + gH - ((parseFloat(d[dataKey]) - min) / range) * gH,
-        }));
+        const pts = validData.map((d, i) => [
+          gX + i * step,
+          gY + gH - ((parseFloat(d[dataKey]) - min) / range) * gH,
+        ]);
 
-        const r = parseInt(color.slice(1, 3), 16);
-        const g = parseInt(color.slice(3, 5), 16);
-        const b = parseInt(color.slice(5, 7), 16);
+        const c = hexToRgb(color);
 
-        doc.setFillColor(r, g, b);
-        doc.setDrawColor(r, g, b);
-        doc.setLineWidth(0.6);
+        const fillPts = [[pts[0][0], gY + gH], ...pts, [pts[pts.length - 1][0], gY + gH]];
+        doc.setFillColor(c.r, c.g, c.b);
+        doc.setDrawColor(c.r, c.g, c.b);
+        doc.setLineWidth(0.3);
+        doc.lines(
+          fillPts.slice(1).map((p, i) => [p[0] - fillPts[i][0], p[1] - fillPts[i][1]]),
+          fillPts[0][0], fillPts[0][1], [1, 1], "F"
+        );
 
-        doc.beginPath();
-        doc.moveTo(pts[0].x, gY + gH);
-        pts.forEach(p => doc.lineTo(p.x, p.y));
-        doc.lineTo(pts[pts.length - 1].x, gY + gH);
-        doc.setFillColor(r, g, b);
-        doc.fill();
-
-        doc.setDrawColor(r, g, b);
         doc.setLineWidth(0.5);
-        doc.beginPath();
-        doc.moveTo(pts[0].x, pts[0].y);
-        pts.forEach(p => doc.lineTo(p.x, p.y));
-        doc.stroke();
+        doc.lines(
+          pts.slice(1).map((p, i) => [p[0] - pts[i][0], p[1] - pts[i][1]]),
+          pts[0][0], pts[0][1], [1, 1], "S"
+        );
 
         if (values.length <= 30) {
-          doc.setFillColor(r, g, b);
-          pts.forEach(p => doc.circle(p.x, p.y, 1, "F"));
+          doc.setFillColor(c.r, c.g, c.b);
+          pts.forEach(p => doc.circle(p[0], p[1], 1, "F"));
         }
 
         doc.setDrawColor(60);
@@ -195,10 +192,7 @@ export default function ReportesPage() {
       };
 
       const drawRainChart = (doc, data, x0, y0, w, h) => {
-        const padL = 18;
-        const padR = 5;
-        const padT = 10;
-        const padB = 12;
+        const padL = 18, padR = 5, padT = 10, padB = 12;
         const gW = w - padL - padR;
         const gH = h - padT - padB;
         const gX = x0 + padL;
@@ -221,19 +215,17 @@ export default function ReportesPage() {
         const step = gW / (data.length - 1 || 1);
         doc.setDrawColor(171, 71, 188);
         doc.setLineWidth(0.6);
-        doc.beginPath();
-        let prevY = gY;
+
         data.forEach((d, i) => {
           const px = gX + i * step;
           const py = d.lluvia ? gY + 2 : gY + gH - 2;
-          if (i === 0) doc.moveTo(px, py);
-          else {
-            doc.lineTo(px, prevY);
-            doc.lineTo(px, py);
+          const nextX = gX + (i + 1) * step;
+          doc.line(px, py, nextX, py);
+          if (i < data.length - 1) {
+            const nextY = data[i + 1].lluvia ? gY + 2 : gY + gH - 2;
+            doc.line(nextX, py, nextX, nextY);
           }
-          prevY = py;
         });
-        doc.stroke();
 
         doc.setDrawColor(60);
         doc.setLineWidth(0.3);
