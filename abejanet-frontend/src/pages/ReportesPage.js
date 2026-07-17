@@ -121,67 +121,100 @@ export default function ReportesPage() {
     try {
       const doc = new jsPDF("l", "mm", "a4");
 
-      // 1. Título y Header
-      doc.setFontSize(18);
-      doc.text("Reporte de Lecturas - AbejaNet", 15, 20);
-      doc.setFontSize(12);
-      doc.text(`Colmena: ${nombreColmena}`, 15, 30);
-      doc.text(`Período: ${rangoActivo > 0 ? `Últimos ${rangoActivo} días` : `${fechaDesde || "Inicio"} al ${fechaHasta || "Hoy"}`}`, 15, 37);
-      doc.text(`Generado: ${fechaGeneracion}`, 15, 44);
-      doc.line(15, 48, 280, 48);
+      doc.setFillColor(255, 255, 255);
+      doc.rect(0, 0, 300, 210, "F");
+      doc.setTextColor(0, 0, 0);
 
-      // 2. Resumen de Métricas
+      doc.setFontSize(20);
+      doc.text("Reporte de Analisis - AbejaNet", 15, 20);
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text(
+        `Colmena: ${nombreColmena} | Periodo: ${rangoActivo > 0 ? `Ultimos ${rangoActivo} dias` : `${fechaDesde || "Inicio"} al ${fechaHasta || "Hoy"}`}`,
+        15, 28
+      );
+      doc.setDrawColor(200);
+      doc.line(15, 32, 280, 32);
+
+      doc.setTextColor(0);
       doc.setFontSize(14);
-      doc.text("Resumen de Métricas", 15, 60);
+      doc.text("Resumen de Metricas", 15, 45);
+
       doc.setFontSize(10);
       const statsData = [
-        ["Total Lecturas", stats.total],
+        ["Total Lecturas", `${stats.total}`],
         ["Peso Promedio", `${stats.pesoProm?.toFixed(2)} kg`],
-        ["Temp. Promedio", `${stats.tempProm?.toFixed(1)} °C`],
+        ["Temp. Promedio", `${stats.tempProm?.toFixed(1)} C`],
         ["Humedad Prom.", `${stats.humProm?.toFixed(1)} %`],
-        ["Peso Máx.", `${stats.pesoMax?.toFixed(2)} kg`],
-        ["Peso Mín.", `${stats.pesoMin?.toFixed(2)} kg`]
+        ["Peso Max.", `${stats.pesoMax?.toFixed(2)} kg`],
+        ["Peso Min.", `${stats.pesoMin?.toFixed(2)} kg`]
       ];
-      
-      let y = 70;
+
+      let y = 55;
       statsData.forEach(([label, value]) => {
-        doc.text(`${label}: ${value}`, 20, y);
-        y += 8;
+        doc.setFillColor(245, 245, 245);
+        doc.rect(15, y - 5, 265, 8, "F");
+        doc.setTextColor(60);
+        doc.text(label + ":", 20, y);
+        doc.setTextColor(0);
+        doc.text(value, 150, y);
+        y += 10;
       });
 
-      // 3. Insertar Gráficas
       const gridElement = document.querySelector(".reportes-grid");
       if (gridElement) {
-        const canvas = await html2canvas(gridElement, { scale: 2, backgroundColor: "#111118" });
+        const canvas = await html2canvas(gridElement, {
+          scale: 2,
+          backgroundColor: "#ffffff",
+        });
         const imgData = canvas.toDataURL("image/png");
-        // Ajustamos la imagen para que quepa bien en la página 1 debajo del resumen
-        doc.addImage(imgData, "PNG", 15, 110, 260, 90); 
+        doc.setTextColor(0);
+        doc.setFontSize(14);
+        doc.text("Analisis Grafico", 15, y + 10);
+        doc.addImage(imgData, "PNG", 15, y + 15, 260, 90);
       }
 
-      // 4. Detalle de Lecturas (Nueva página)
       doc.addPage();
+      doc.setFillColor(255, 255, 255);
+      doc.rect(0, 0, 300, 210, "F");
+      doc.setTextColor(0);
       doc.setFontSize(14);
       doc.text("Detalle de Lecturas", 15, 20);
-      
+
       doc.setFontSize(8);
-      let tableY = 30;
-      doc.text("Fecha", 15, tableY);
-      doc.text("Temp", 50, tableY);
-      doc.text("Hum", 70, tableY);
-      doc.text("Peso", 90, tableY);
-      doc.text("Sonido", 110, tableY);
-      doc.text("Lluvia", 130, tableY);
-      doc.line(15, tableY + 2, 150, tableY + 2);
-      
-      tableY += 8;
-      lecturasFiltradas.slice().reverse().slice(0, 30).forEach(l => {
-        if (tableY > 190) { doc.addPage(); tableY = 20; }
-        doc.text(new Date(l.fecha_registro).toLocaleString("es-MX"), 15, tableY);
-        doc.text(l.temperatura != null ? `${l.temperatura}°C` : "—", 50, tableY);
-        doc.text(l.humedad != null ? `${l.humedad}%` : "—", 70, tableY);
-        doc.text(l.peso != null ? `${l.peso} kg` : "—", 90, tableY);
-        doc.text(l.sonido != null ? `${l.sonido} dB` : "—", 110, tableY);
-        doc.text(l.lluvia ? "Sí" : "No", 130, tableY);
+      doc.setFillColor(30, 30, 30);
+      doc.rect(15, 25, 140, 7, "F");
+      doc.setTextColor(255);
+      doc.text("Fecha", 18, 30);
+      doc.text("Temp", 65, 30);
+      doc.text("Hum", 85, 30);
+      doc.text("Peso", 105, 30);
+      doc.text("Sonido", 125, 30);
+      doc.text("Lluvia", 143, 30);
+
+      doc.setTextColor(0);
+      let tableY = 37;
+      lecturasFiltradas.slice().reverse().slice(0, 40).forEach((l, idx) => {
+        if (tableY > 195) {
+          doc.addPage();
+          doc.setFillColor(255, 255, 255);
+          doc.rect(0, 0, 300, 210, "F");
+          doc.setTextColor(0);
+          doc.setFontSize(14);
+          doc.text("Detalle de Lecturas (cont.)", 15, 20);
+          tableY = 30;
+        }
+        if (idx % 2 === 0) {
+          doc.setFillColor(245, 245, 245);
+          doc.rect(15, tableY - 4, 140, 6, "F");
+        }
+        doc.setTextColor(40);
+        doc.text(new Date(l.fecha_registro).toLocaleString("es-MX"), 18, tableY);
+        doc.text(l.temperatura != null ? `${l.temperatura} C` : "-", 65, tableY);
+        doc.text(l.humedad != null ? `${l.humedad}%` : "-", 85, tableY);
+        doc.text(l.peso != null ? `${l.peso} kg` : "-", 105, tableY);
+        doc.text(l.sonido != null ? `${l.sonido} dB` : "-", 125, tableY);
+        doc.text(l.lluvia ? "Si" : "No", 143, tableY);
         tableY += 6;
       });
 
