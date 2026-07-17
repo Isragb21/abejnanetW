@@ -119,28 +119,26 @@ export default function ReportesPage() {
     setGeneratingPdf(true);
 
     try {
-      const doc = new jsPDF("l", "mm", "a4");
+      const doc = new jsPDF("p", "mm", "a4"); // Cambio a Portrait para mejor legibilidad
 
+      // --- PÁGINA 1: RESUMEN Y GRÁFICAS ---
       doc.setFillColor(255, 255, 255);
-      doc.rect(0, 0, 300, 210, "F");
-      doc.setTextColor(0, 0, 0);
-
-      doc.setFontSize(20);
-      doc.text("Reporte de Analisis - AbejaNet", 15, 20);
+      doc.rect(0, 0, 210, 297, "F");
+      
+      doc.setFontSize(22);
+      doc.setTextColor(0);
+      doc.text("Reporte AbejaNet", 15, 20);
       doc.setFontSize(10);
       doc.setTextColor(100);
-      doc.text(
-        `Colmena: ${nombreColmena} | Periodo: ${rangoActivo > 0 ? `Ultimos ${rangoActivo} dias` : `${fechaDesde || "Inicio"} al ${fechaHasta || "Hoy"}`}`,
-        15, 28
-      );
-      doc.setDrawColor(200);
-      doc.line(15, 32, 280, 32);
+      doc.text(`Colmena: ${nombreColmena}`, 15, 28);
+      doc.text(`Periodo: ${rangoActivo > 0 ? `Ultimos ${rangoActivo} dias` : `${fechaDesde || "Inicio"} al ${fechaHasta || "Hoy"}`}`, 15, 33);
+      doc.line(15, 38, 195, 38);
 
-      doc.setTextColor(0);
+      // Resumen Table-like
       doc.setFontSize(14);
-      doc.text("Resumen de Metricas", 15, 45);
-
-      doc.setFontSize(10);
+      doc.setTextColor(0);
+      doc.text("Resumen de Metricas", 15, 50);
+      
       const statsData = [
         ["Total Lecturas", `${stats.total}`],
         ["Peso Promedio", `${stats.pesoProm?.toFixed(2)} kg`],
@@ -150,78 +148,77 @@ export default function ReportesPage() {
         ["Peso Min.", `${stats.pesoMin?.toFixed(2)} kg`]
       ];
 
-      let y = 55;
+      let y = 60;
       statsData.forEach(([label, value]) => {
-        doc.setFillColor(245, 245, 245);
-        doc.rect(15, y - 5, 265, 8, "F");
+        doc.setFillColor(240, 240, 240);
+        doc.rect(15, y - 5, 180, 8, "F");
         doc.setTextColor(60);
-        doc.text(label + ":", 20, y);
+        doc.setFontSize(10);
+        doc.text(label, 20, y);
         doc.setTextColor(0);
-        doc.text(value, 150, y);
+        doc.text(value, 160, y);
         y += 10;
       });
 
+      // Gráficas
       const gridElement = document.querySelector(".reportes-grid");
       if (gridElement) {
-        const canvas = await html2canvas(gridElement, {
-          scale: 2,
-          backgroundColor: "#ffffff",
-        });
+        const canvas = await html2canvas(gridElement, { scale: 1.5, backgroundColor: "#ffffff" });
         const imgData = canvas.toDataURL("image/png");
-        doc.setTextColor(0);
-        doc.setFontSize(14);
-        doc.text("Analisis Grafico", 15, y + 10);
-        doc.addImage(imgData, "PNG", 15, y + 15, 260, 90);
+        doc.text("Analisis Grafico", 15, y + 5);
+        doc.addImage(imgData, "PNG", 15, y + 10, 180, 70); 
       }
 
+      // --- PÁGINA 2+: DETALLE DE LECTURAS ---
       doc.addPage();
-      doc.setFillColor(255, 255, 255);
-      doc.rect(0, 0, 300, 210, "F");
-      doc.setTextColor(0);
       doc.setFontSize(14);
       doc.text("Detalle de Lecturas", 15, 20);
 
-      doc.setFontSize(8);
-      doc.setFillColor(30, 30, 30);
-      doc.rect(15, 25, 140, 7, "F");
+      const colWidths = [45, 25, 25, 25, 25, 20];
+      const headers = ["Fecha", "Temp", "Hum", "Peso", "Sonido", "Lluvia"];
+      
+      let tableY = 30;
+      // Header Tabla
+      doc.setFillColor(50, 50, 50);
+      doc.rect(15, tableY - 5, 170, 7, "F");
       doc.setTextColor(255);
-      doc.text("Fecha", 18, 30);
-      doc.text("Temp", 65, 30);
-      doc.text("Hum", 85, 30);
-      doc.text("Peso", 105, 30);
-      doc.text("Sonido", 125, 30);
-      doc.text("Lluvia", 143, 30);
+      headers.forEach((h, i) => {
+        let x = 15 + colWidths.slice(0, i).reduce((a, b) => a + b, 0);
+        doc.text(h, x + 2, tableY);
+      });
 
       doc.setTextColor(0);
-      let tableY = 37;
-      lecturasFiltradas.slice().reverse().slice(0, 40).forEach((l, idx) => {
-        if (tableY > 195) {
+      tableY += 8;
+      lecturasFiltradas.slice().reverse().slice(0, 35).forEach((l, idx) => {
+        if (tableY > 270) {
           doc.addPage();
-          doc.setFillColor(255, 255, 255);
-          doc.rect(0, 0, 300, 210, "F");
-          doc.setTextColor(0);
-          doc.setFontSize(14);
-          doc.text("Detalle de Lecturas (cont.)", 15, 20);
-          tableY = 30;
+          tableY = 20;
         }
         if (idx % 2 === 0) {
           doc.setFillColor(245, 245, 245);
-          doc.rect(15, tableY - 4, 140, 6, "F");
+          doc.rect(15, tableY - 4, 170, 6, "F");
         }
-        doc.setTextColor(40);
-        doc.text(new Date(l.fecha_registro).toLocaleString("es-MX"), 18, tableY);
-        doc.text(l.temperatura != null ? `${l.temperatura} C` : "-", 65, tableY);
-        doc.text(l.humedad != null ? `${l.humedad}%` : "-", 85, tableY);
-        doc.text(l.peso != null ? `${l.peso} kg` : "-", 105, tableY);
-        doc.text(l.sonido != null ? `${l.sonido} dB` : "-", 125, tableY);
-        doc.text(l.lluvia ? "Si" : "No", 143, tableY);
-        tableY += 6;
+        
+        const row = [
+          new Date(l.fecha_registro).toLocaleString("es-MX", {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}),
+          l.temperatura != null ? `${l.temperatura}C` : "-",
+          l.humedad != null ? `${l.humedad}%` : "-",
+          l.peso != null ? `${l.peso}kg` : "-",
+          l.sonido != null ? `${l.sonido}dB` : "-",
+          l.lluvia ? "Si" : "No"
+        ];
+        
+        row.forEach((cell, i) => {
+          let x = 15 + colWidths.slice(0, i).reduce((a, b) => a + b, 0);
+          doc.text(cell, x + 2, tableY);
+        });
+        tableY += 7;
       });
 
-      doc.save(`Reporte_AbejaNet_${nombreColmena.replace(/\s+/g, "_")}.pdf`);
+      doc.save(`Reporte_${nombreColmena.replace(/\s+/g, "_")}.pdf`);
     } catch (err) {
-      console.error("Error generando PDF:", err);
-      alert("Error al generar el PDF.");
+      console.error(err);
+      alert("Error al generar PDF");
     } finally {
       setGeneratingPdf(false);
     }
