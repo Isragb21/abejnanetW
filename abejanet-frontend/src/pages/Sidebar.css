@@ -4,33 +4,25 @@
   height: 100vh;
   position: sticky;
   top: 0;
-  background: linear-gradient(180deg, rgba(8, 8, 8, 0.95), rgba(12, 12, 12, 0.9));
-  border-right: 1px solid rgba(255, 230, 0, 0.15);
+  background: #080808;
   display: flex;
   flex-direction: column;
-  padding: 24px 18px;
-  backdrop-filter: blur(10px);
+  padding: 20px;
   z-index: 100;
   overflow: hidden;
-  flex-shrink: 0;
 }
 
 .sidebar-top {
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
   flex: 1;
   overflow-y: auto;
   min-height: 0;
+  padding-bottom: 20px;
 }
 
-.sidebar-top::-webkit-scrollbar {
-  width: 4px;
-}
-
-.sidebar-top::-webkit-scrollbar-thumb {
-  background: rgba(255, 230, 0, 0.3);
-  border-radius: 4px;
+.sidebar-bottom {
+  border-top: 1px solid #333;
+  padding-top: 15px;
+  margin-top: auto;
 }
 
 .sidebar-logo {
@@ -95,14 +87,6 @@
   transform: none; 
 }
 
-/* Botón de cerrar sesión */
-.sidebar-bottom {
-  flex-shrink: 0;
-  padding-top: 16px;
-  border-top: 1px solid rgba(255, 230, 0, 0.1);
-  margin-top: auto;
-}
-
 .sidebar-logout {
   color: #ff6b6b;
 }
@@ -122,12 +106,12 @@
     border-right: none;
     border-bottom: 1px solid rgba(255, 230, 0, 0.15);
   }
-  .sidebar-top { flex-direction: row; align-items: center; width: 100%; gap: 15px;}
+  .sidebar-top { flex-direction: row; align-items: center; width: 100%; gap: 15px; overflow-y: visible; }
   .sidebar-nav { flex-direction: row; flex-wrap: wrap; gap: 4px; justify-content: flex-end; flex: 1; }
-  .sidebar-logo { padding-left: 0; margin-right: auto;}
+  .sidebar-logo { padding-left: 0; margin-right: auto; }
   .sidebar-text { display: none; }
-  .sidebar-btn { padding: 8px 10px; gap: 6px; font-size: 0.9rem;}
-  .sidebar-btn .btn-label { display: none;  }
-  .sidebar-btn-active { border-left: none; border-bottom: 3px solid #ffe600; border-radius: 8px;}
+  .sidebar-btn { padding: 8px 10px; gap: 6px; font-size: 0.9rem; }
+  .sidebar-btn .btn-label { display: none; }
+  .sidebar-btn-active { border-left: none; border-bottom: 3px solid #ffe600; border-radius: 8px; }
   .sidebar-bottom { display: none; }
 }

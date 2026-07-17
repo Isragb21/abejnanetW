@@ -119,26 +119,28 @@ export default function ReportesPage() {
     setGeneratingPdf(true);
 
     try {
-      const doc = new jsPDF("p", "mm", "a4"); // Cambio a Portrait para mejor legibilidad
+      const doc = new jsPDF("l", "mm", "a4");
+      const pageW = 297;
+      const pageH = 210;
+      const margin = 15;
 
-      // --- PÁGINA 1: RESUMEN Y GRÁFICAS ---
       doc.setFillColor(255, 255, 255);
-      doc.rect(0, 0, 210, 297, "F");
-      
+      doc.rect(0, 0, pageW, pageH, "F");
+
       doc.setFontSize(22);
       doc.setTextColor(0);
-      doc.text("Reporte AbejaNet", 15, 20);
+      doc.text("Reporte AbejaNet", margin, 20);
       doc.setFontSize(10);
       doc.setTextColor(100);
-      doc.text(`Colmena: ${nombreColmena}`, 15, 28);
-      doc.text(`Periodo: ${rangoActivo > 0 ? `Ultimos ${rangoActivo} dias` : `${fechaDesde || "Inicio"} al ${fechaHasta || "Hoy"}`}`, 15, 33);
-      doc.line(15, 38, 195, 38);
+      doc.text(`Colmena: ${nombreColmena}`, margin, 28);
+      doc.text(`Periodo: ${rangoActivo > 0 ? `Ultimos ${rangoActivo} dias` : `${fechaDesde || "Inicio"} al ${fechaHasta || "Hoy"}`}`, margin, 33);
+      doc.setDrawColor(180);
+      doc.line(margin, 38, pageW - margin, 38);
 
-      // Resumen Table-like
       doc.setFontSize(14);
       doc.setTextColor(0);
-      doc.text("Resumen de Metricas", 15, 50);
-      
+      doc.text("Resumen de Metricas", margin, 48);
+
       const statsData = [
         ["Total Lecturas", `${stats.total}`],
         ["Peso Promedio", `${stats.pesoProm?.toFixed(2)} kg`],
@@ -148,69 +150,86 @@ export default function ReportesPage() {
         ["Peso Min.", `${stats.pesoMin?.toFixed(2)} kg`]
       ];
 
-      let y = 60;
-      statsData.forEach(([label, value]) => {
+      let y = 55;
+      const colW = (pageW - margin * 2) / 3;
+      statsData.forEach(([label, value], i) => {
+        const col = i % 3;
+        const row = Math.floor(i / 3);
+        const bx = margin + col * colW;
+        const by = y + row * 14;
         doc.setFillColor(240, 240, 240);
-        doc.rect(15, y - 5, 180, 8, "F");
-        doc.setTextColor(60);
-        doc.setFontSize(10);
-        doc.text(label, 20, y);
+        doc.roundedRect(bx, by, colW - 4, 11, 2, 2, "F");
+        doc.setTextColor(80);
+        doc.setFontSize(9);
+        doc.text(label, bx + 4, by + 5);
         doc.setTextColor(0);
-        doc.text(value, 160, y);
-        y += 10;
+        doc.setFontSize(12);
+        doc.text(value, bx + 4, by + 9.5);
       });
 
-      // Gráficas
       const gridElement = document.querySelector(".reportes-grid");
       if (gridElement) {
-        const canvas = await html2canvas(gridElement, { scale: 1.5, backgroundColor: "#ffffff" });
+        const canvas = await html2canvas(gridElement, { scale: 3, backgroundColor: "#ffffff" });
         const imgData = canvas.toDataURL("image/png");
-        doc.text("Analisis Grafico", 15, y + 5);
-        doc.addImage(imgData, "PNG", 15, y + 10, 180, 70); 
+        const imgW = pageW - margin * 2;
+        const imgH = (canvas.height / canvas.width) * imgW;
+        doc.setFontSize(14);
+        doc.setTextColor(0);
+        doc.text("Analisis Grafico", margin, y + 40);
+        doc.addImage(imgData, "PNG", margin, y + 45, imgW, imgH);
       }
 
-      // --- PÁGINA 2+: DETALLE DE LECTURAS ---
       doc.addPage();
+      doc.setFillColor(255, 255, 255);
+      doc.rect(0, 0, pageW, pageH, "F");
       doc.setFontSize(14);
-      doc.text("Detalle de Lecturas", 15, 20);
+      doc.setTextColor(0);
+      doc.text("Detalle de Lecturas", margin, 20);
 
-      const colWidths = [45, 25, 25, 25, 25, 20];
-      const headers = ["Fecha", "Temp", "Hum", "Peso", "Sonido", "Lluvia"];
-      
+      const colWidths = [80, 40, 40, 40, 40, 40];
+      const headers = ["Fecha", "Temp", "Humedad", "Peso", "Sonido", "Lluvia"];
+      const totalW = colWidths.reduce((a, b) => a + b, 0);
+
       let tableY = 30;
-      // Header Tabla
-      doc.setFillColor(50, 50, 50);
-      doc.rect(15, tableY - 5, 170, 7, "F");
+      doc.setFillColor(40, 40, 40);
+      doc.rect(margin, tableY - 5, totalW, 8, "F");
       doc.setTextColor(255);
+      doc.setFontSize(9);
+      let headerX = margin;
       headers.forEach((h, i) => {
-        let x = 15 + colWidths.slice(0, i).reduce((a, b) => a + b, 0);
-        doc.text(h, x + 2, tableY);
+        doc.text(h, headerX + 3, tableY);
+        headerX += colWidths[i];
       });
 
       doc.setTextColor(0);
-      tableY += 8;
-      lecturasFiltradas.slice().reverse().slice(0, 35).forEach((l, idx) => {
-        if (tableY > 270) {
+      tableY += 10;
+      lecturasFiltradas.slice().reverse().slice(0, 50).forEach((l, idx) => {
+        if (tableY > pageH - 15) {
           doc.addPage();
-          tableY = 20;
+          doc.setFillColor(255, 255, 255);
+          doc.rect(0, 0, pageW, pageH, "F");
+          doc.setFontSize(14);
+          doc.setTextColor(0);
+          doc.text("Detalle de Lecturas (cont.)", margin, 20);
+          tableY = 30;
         }
         if (idx % 2 === 0) {
           doc.setFillColor(245, 245, 245);
-          doc.rect(15, tableY - 4, 170, 6, "F");
+          doc.rect(margin, tableY - 4, totalW, 7, "F");
         }
-        
         const row = [
-          new Date(l.fecha_registro).toLocaleString("es-MX", {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}),
-          l.temperatura != null ? `${l.temperatura}C` : "-",
-          l.humedad != null ? `${l.humedad}%` : "-",
-          l.peso != null ? `${l.peso}kg` : "-",
-          l.sonido != null ? `${l.sonido}dB` : "-",
+          new Date(l.fecha_registro).toLocaleString("es-MX", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }),
+          l.temperatura != null ? `${l.temperatura} C` : "-",
+          l.humedad != null ? `${l.humedad} %` : "-",
+          l.peso != null ? `${l.peso} kg` : "-",
+          l.sonido != null ? `${l.sonido} dB` : "-",
           l.lluvia ? "Si" : "No"
         ];
-        
+        doc.setFontSize(8);
+        let cellX = margin;
         row.forEach((cell, i) => {
-          let x = 15 + colWidths.slice(0, i).reduce((a, b) => a + b, 0);
-          doc.text(cell, x + 2, tableY);
+          doc.text(cell, cellX + 3, tableY);
+          cellX += colWidths[i];
         });
         tableY += 7;
       });
