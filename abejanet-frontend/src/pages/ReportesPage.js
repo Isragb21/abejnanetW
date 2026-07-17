@@ -120,7 +120,7 @@ export default function ReportesPage() {
 
     try {
       const doc = new jsPDF("l", "mm", "a4");
-      
+
       // 1. Título y Header
       doc.setFontSize(18);
       doc.text("Reporte de Lecturas - AbejaNet", 15, 20);
@@ -130,7 +130,7 @@ export default function ReportesPage() {
       doc.text(`Generado: ${fechaGeneracion}`, 15, 44);
       doc.line(15, 48, 280, 48);
 
-      // 2. Tabla de estadísticas (Resumen)
+      // 2. Resumen de Métricas
       doc.setFontSize(14);
       doc.text("Resumen de Métricas", 15, 60);
       doc.setFontSize(10);
@@ -145,13 +145,20 @@ export default function ReportesPage() {
       
       let y = 70;
       statsData.forEach(([label, value]) => {
-        doc.text(`${label}:`, 20, y);
-        doc.text(`${value}`, 60, y);
+        doc.text(`${label}: ${value}`, 20, y);
         y += 8;
       });
 
-      // 3. Gráficas (Capturamos secciones)
-      // Como no tenemos plugin de tablas complejo, agregaremos las tablas de lecturas aquí
+      // 3. Insertar Gráficas
+      const gridElement = document.querySelector(".reportes-grid");
+      if (gridElement) {
+        const canvas = await html2canvas(gridElement, { scale: 2, backgroundColor: "#111118" });
+        const imgData = canvas.toDataURL("image/png");
+        // Ajustamos la imagen para que quepa bien en la página 1 debajo del resumen
+        doc.addImage(imgData, "PNG", 15, 110, 260, 90); 
+      }
+
+      // 4. Detalle de Lecturas (Nueva página)
       doc.addPage();
       doc.setFontSize(14);
       doc.text("Detalle de Lecturas", 15, 20);
@@ -167,7 +174,7 @@ export default function ReportesPage() {
       doc.line(15, tableY + 2, 150, tableY + 2);
       
       tableY += 8;
-      lecturasFiltradas.slice().reverse().slice(0, 25).forEach(l => {
+      lecturasFiltradas.slice().reverse().slice(0, 30).forEach(l => {
         if (tableY > 190) { doc.addPage(); tableY = 20; }
         doc.text(new Date(l.fecha_registro).toLocaleString("es-MX"), 15, tableY);
         doc.text(l.temperatura != null ? `${l.temperatura}°C` : "—", 50, tableY);
