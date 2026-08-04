@@ -12,10 +12,14 @@
 /* =============== CONTENIDO PRINCIPAL =============== */
 .apiarios-main {
   flex: 1;
+  margin-left: 240px;
   padding: 28px 40px 40px;
   display: flex;
   flex-direction: column;
   gap: 20px;
+  width: calc(100% - 240px);
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .apiarios-header {
@@ -241,4 +245,5 @@
 
 @media (max-width: 768px) {
   .apiarios-layout { flex-direction: column; }
+  .apiarios-main { margin-left: 0; width: 100%; }
 }
