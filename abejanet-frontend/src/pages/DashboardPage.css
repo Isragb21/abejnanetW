@@ -145,12 +145,12 @@
 
 /* ===== LIGHT MODE ===== */
 [data-theme="light"] .dashboard-header h1 { color: #222; }
-[data-theme="light"] .dash-stat-chip { background: #ece8de; border-color: #e0e0e0; }
+[data-theme="light"] .dash-stat-chip { background: #bdb8ac; border-color: #a9a398; }
 [data-theme="light"] .dash-stat-label { color: #888; }
 [data-theme="light"] .dash-stat-value { color: #222; }
 [data-theme="light"] .dashboard-card {
-  background: #ece8de;
-  border: 1px solid #e0e0e0;
+  background: #c9c4b8;
+  border: 1px solid #a9a398;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   color: #222;
 }

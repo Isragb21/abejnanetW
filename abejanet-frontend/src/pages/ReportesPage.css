@@ -163,11 +163,11 @@
 /* ===== LIGHT MODE ===== */
 [data-theme="light"] .reporte-select span { color: #555; }
 [data-theme="light"] .reporte-select select,
-[data-theme="light"] .reporte-select input { background: #ece8de; color: #333; border: 1px solid #ccc; }
-[data-theme="light"] .reporte-stat-card { background: #ece8de; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+[data-theme="light"] .reporte-select input { background: #bdb8ac; color: #2d2a25; border: 1px solid #a9a398; }
+[data-theme="light"] .reporte-stat-card { background: #c9c4b8; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
 [data-theme="light"] .reporte-stat-icon { background: rgba(0,0,0,0.04); }
 [data-theme="light"] .reporte-stat-label { color: #666; }
-[data-theme="light"] .reportes-pdf-header { background: #ece8de; border-color: #e0e0e0; }
+[data-theme="light"] .reportes-pdf-header { background: #c9c4b8; border-color: #a9a398; }
 [data-theme="light"] .reportes-pdf-header h2 { color: #b8860b; }
 [data-theme="light"] .reportes-pdf-header p { color: #555; }
 [data-theme="light"] .reportes-pdf-header p strong { color: #222; }

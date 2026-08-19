@@ -292,23 +292,23 @@
 }
 
 /* ===== LIGHT MODE ===== */
-[data-theme="light"] .create-colmena-root { background-color: #ddd8ce; }
+[data-theme="light"] .create-colmena-root { background-color: #b8b4aa; }
 [data-theme="light"] .create-colmena-root::before { background: linear-gradient(180deg, rgba(221, 216, 206,0.95), rgba(221, 216, 206,0.9)); }
 [data-theme="light"] .create-colmena-header h2 { color: #222; }
 [data-theme="light"] .create-colmena-sub { color: #666; }
-[data-theme="light"] .create-colmena-form-card { background: #ece8de; border-color: #e0e0e0; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+[data-theme="light"] .create-colmena-form-card { background: #c9c4b8; border-color: #a9a398; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
 [data-theme="light"] .form-field span { color: #555; }
 [data-theme="light"] .form-field input,
 [data-theme="light"] .form-field select,
-[data-theme="light"] .form-field textarea { background: #e5e1d7; color: #333; border-color: #ccc; }
+[data-theme="light"] .form-field textarea { background: #bdb8ac; color: #2d2a25; border-color: #a9a398; }
 [data-theme="light"] .form-field input:focus,
 [data-theme="light"] .form-field select:focus,
-[data-theme="light"] .form-field textarea:focus { background: #ece8de; border-color: #d4940a; }
+[data-theme="light"] .form-field textarea:focus { background: #c9c4b8; border-color: #9a6500; }
 [data-theme="light"] .form-actions button { background: linear-gradient(135deg, #ffe600, #ffb700); color: #222; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
 [data-theme="light"] .alert.error { background: rgba(255,72,72,0.08); border-color: rgba(255,80,80,0.3); }
 [data-theme="light"] .alert.success { background: rgba(0,230,118,0.08); border-color: rgba(0,230,118,0.3); }
-[data-theme="light"] .create-colmena-aside { background: #ece8de; border-color: #e0e0e0; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+[data-theme="light"] .create-colmena-aside { background: #c9c4b8; border-color: #a9a398; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
 [data-theme="light"] .create-colmena-aside ul { color: #555; }
-[data-theme="light"] .create-colmena-meta { color: #888; border-top-color: #eee; }
-[data-theme="light"] .crumb-link { color: #555; background: #ece8de; border-color: #ccc; }
-[data-theme="light"] .crumb-link:hover { color: #222; background: #ddd8ce; border-color: #d4940a; }
+[data-theme="light"] .create-colmena-meta { color: #716b61; border-top-color: #a9a398; }
+[data-theme="light"] .crumb-link { color: #504b43; background: #bdb8ac; border-color: #a9a398; }
+[data-theme="light"] .crumb-link:hover { color: #2d2a25; background: #b1aca0; border-color: #9a6500; }

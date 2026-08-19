@@ -249,23 +249,23 @@
 }
 
 /* ===== LIGHT MODE ===== */
-[data-theme="light"] .apiarios-layout { background: #ddd8ce; color: #222; }
+[data-theme="light"] .apiarios-layout { background: #b8b4aa; color: #2d2a25; }
 [data-theme="light"] .apiarios-badge { color: #b8860b; }
 [data-theme="light"] .apiarios-subtitle { color: #666; }
-[data-theme="light"] .apiarios-resumen-pill { background: #ece8de; border-color: #ccc; color: #333; }
-[data-theme="light"] .apiarios-card { background: #ece8de; border-color: #e0e0e0; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-[data-theme="light"] .tabla-apiarios { background: #ece8de; color: #333; }
-[data-theme="light"] .tabla-apiarios thead { background: #e5e1d7; }
-[data-theme="light"] .tabla-apiarios th { color: #b8860b; border-bottom-color: #eee; }
-[data-theme="light"] .tabla-apiarios td { border-bottom-color: #eee; }
-[data-theme="light"] .tabla-apiarios tbody tr:hover { background: #ddd8ce; }
-[data-theme="light"] .btn-secundario { background-color: #eee; color: #333; border: 1px solid #ccc; }
+[data-theme="light"] .apiarios-resumen-pill { background: #c9c4b8; border-color: #a9a398; color: #2d2a25; }
+[data-theme="light"] .apiarios-card { background: #c9c4b8; border-color: #a9a398; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+[data-theme="light"] .tabla-apiarios { background: #c9c4b8; color: #2d2a25; }
+[data-theme="light"] .tabla-apiarios thead { background: #aaa59a; }
+[data-theme="light"] .tabla-apiarios th { color: #805400; border-bottom-color: #a9a398; }
+[data-theme="light"] .tabla-apiarios td { border-bottom-color: #b5b0a4; }
+[data-theme="light"] .tabla-apiarios tbody tr:hover { background: #b5b0a4; }
+[data-theme="light"] .btn-secundario { background-color: #c1bcb0; color: #2d2a25; border: 1px solid #a9a398; }
 [data-theme="light"] .btn-secundario:hover { background-color: #ddd; }
 [data-theme="light"] .modal-overlay { background-color: rgba(0,0,0,0.4); }
-[data-theme="light"] .modal-content { background: #ece8de; border: 1px solid #e0e0e0; box-shadow: 0 15px 40px rgba(0,0,0,0.15); }
+[data-theme="light"] .modal-content { background: #c9c4b8; border: 1px solid #a9a398; box-shadow: 0 15px 40px rgba(0,0,0,0.15); }
 [data-theme="light"] .modal-content h2 { color: #b8860b; }
 [data-theme="light"] .form-apiario-modal label { color: #555; }
 [data-theme="light"] .form-apiario-modal input,
-[data-theme="light"] .form-apiario-modal textarea { background: #e5e1d7; color: #333; border: 1px solid #ccc; }
+[data-theme="light"] .form-apiario-modal textarea { background: #bdb8ac; color: #2d2a25; border: 1px solid #a9a398; }
 [data-theme="light"] .apiarios-empty { color: #666; }
 [data-theme="light"] .cuenta-loading { color: #b8860b; }

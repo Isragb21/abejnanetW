@@ -495,7 +495,7 @@
   color: #3f3f3f;
 }
 
-[data-theme="light"] .login-panel { background: rgba(236, 232, 222, 0.96); }
+[data-theme="light"] .login-panel { background: rgba(201, 196, 184, 0.96); }
 
 [data-theme="light"] .panel-head h2 { color: #1f1f1f; }
 
@@ -505,7 +505,7 @@
 
 [data-theme="light"] .input {
   border: 1px solid rgba(120, 120, 120, 0.6);
-  background: #ece8de;
+  background: #bdb8ac;
   color: #1f1f1f;
 }
 
@@ -514,7 +514,7 @@
 [data-theme="light"] .input:focus {
   border-color: var(--honey-500);
   box-shadow: 0 0 0 1px rgba(255, 179, 0, 0.5);
-  background: #ece8de;
+  background: #c9c4b8;
 }
 
 [data-theme="light"] .icon { color: #9ca3af; }
