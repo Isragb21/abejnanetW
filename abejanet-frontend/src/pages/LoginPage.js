@@ -196,15 +196,11 @@ function LoginPage() {
               <li><i className="fas fa-bell" /> {t("login.bullet2")}</li>
               <li><i className="fas fa-lock" /> {t("login.bullet3")}</li>
             </ul>
-            <div className="login-meta">
-              <span className="pill-meta"><i className="fas fa-shield-alt" /> {t("login.pillDb")}</span>
-            </div>
           </div>
 
           <div className="login-panel">
             <header className="panel-head">
               <h2>{step === 1 ? t("login.head1") : t("login.head2")}</h2>
-              <p>{step === 1 ? t("login.sub1") : t("login.sub2")}</p>
             </header>
 
             {/* ======================= FORMULARIO PASO 1 (LOGIN) ======================= */}
