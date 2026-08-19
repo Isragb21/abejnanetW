@@ -294,7 +294,7 @@
 
 /* ===== LIGHT MODE ===== */
 [data-theme="light"] .cuenta-card {
-  background: #ffffff;
+  background: #f8f5ee;
   border-color: #e0e0e0;
   box-shadow: 0 8px 24px rgba(0,0,0,0.08);
 }
@@ -302,13 +302,13 @@
 [data-theme="light"] .cuenta-card::after { background: radial-gradient(circle at center, rgba(255,213,74,0.08) 0%, transparent 70%); }
 [data-theme="light"] .cuenta-nombre { color: #222; text-shadow: none; }
 [data-theme="light"] .cuenta-correo { color: #666; }
-[data-theme="light"] .cuenta-info { background: #f9f9f6; border-color: #e0e0e0; }
-[data-theme="light"] .cuenta-info:hover { background: #f5f5f0; border-color: #d4940a; }
+[data-theme="light"] .cuenta-info { background: #f5f2eb; border-color: #e0e0e0; }
+[data-theme="light"] .cuenta-info:hover { background: #f0ede5; border-color: #d4940a; }
 [data-theme="light"] .cuenta-info div { border-bottom-color: #eee; }
 [data-theme="light"] .cuenta-info strong { color: #333; }
-[data-theme="light"] .cuenta-form input { background: #f8f8f8; color: #333; border-color: #ccc; }
-[data-theme="light"] .cuenta-form input:focus { background: #fff; }
-[data-theme="light"] .cuenta-form input:disabled { background: #f0f0f0; color: #999; }
+[data-theme="light"] .cuenta-form input { background: #f5f2eb; color: #333; border-color: #ccc; }
+[data-theme="light"] .cuenta-form input:focus { background: #f8f5ee; }
+[data-theme="light"] .cuenta-form input:disabled { background: #ebe8e0; color: #999; }
 [data-theme="light"] .btn-cancelar { background: #eee; color: #333; border-color: #ccc; }
 [data-theme="light"] .btn-cancelar:hover { background: #ddd; }
 [data-theme="light"] .cuenta-loading { color: #b8860b; }

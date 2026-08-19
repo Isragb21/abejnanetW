@@ -145,11 +145,11 @@
 
 /* ===== LIGHT MODE ===== */
 [data-theme="light"] .dashboard-header h1 { color: #222; }
-[data-theme="light"] .dash-stat-chip { background: #fff; border-color: #e0e0e0; }
+[data-theme="light"] .dash-stat-chip { background: #f8f5ee; border-color: #e0e0e0; }
 [data-theme="light"] .dash-stat-label { color: #888; }
 [data-theme="light"] .dash-stat-value { color: #222; }
 [data-theme="light"] .dashboard-card {
-  background: #ffffff;
+  background: #f8f5ee;
   border: 1px solid #e0e0e0;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   color: #222;
