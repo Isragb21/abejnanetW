@@ -130,8 +130,8 @@
 
 /* ===== LIGHT MODE ===== */
 [data-theme="light"] .sidebar-global {
-  background: #ece8de;
-  border-right: 1px solid #e0e0e0;
+  background: #dedbd3;
+  border-right: 1px solid #c8c5bd;
 }
 [data-theme="light"] .sidebar-text { color: #222; }
 [data-theme="light"] .sidebar-btn { color: #555; }
@@ -141,5 +141,5 @@
   color: #d4940a;
   border-left: 4px solid #d4940a;
 }
-[data-theme="light"] .sidebar-bottom { border-top-color: #e0e0e0; }
+[data-theme="light"] .sidebar-bottom { border-top-color: #c8c5bd; }
 [data-theme="light"] .sidebar-btn::-webkit-scrollbar-thumb { background: rgba(200, 160, 0, 0.2); }

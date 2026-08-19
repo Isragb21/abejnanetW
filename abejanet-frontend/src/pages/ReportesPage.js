@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import {
-  LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  XAxis, YAxis, Tooltip, ResponsiveContainer,
   CartesianGrid, AreaChart, Area
 } from "recharts";
 import jsPDF from "jspdf";
@@ -193,48 +193,6 @@ export default function ReportesPage() {
         doc.line(gX, gY + gH, gX + gW, gY + gH);
       };
 
-      const drawRainChart = (doc, data, x0, y0, w, h) => {
-        const padL = 18, padR = 5, padT = 10, padB = 12;
-        const gW = w - padL - padR;
-        const gH = h - padT - padB;
-        const gX = x0 + padL;
-        const gY = y0 + padT;
-
-        doc.setFontSize(9);
-        doc.setTextColor(60);
-        doc.text("Lluvia", x0, y0 - 2);
-
-        doc.setDrawColor(220);
-        doc.setLineWidth(0.2);
-        doc.line(gX, gY + gH, gX + gW, gY + gH);
-        doc.line(gX, gY, gX + gW, gY);
-
-        doc.setFontSize(6);
-        doc.setTextColor(140);
-        doc.text("Si", x0, gY + 4);
-        doc.text("No", x0, gY + gH + 2);
-
-        const step = gW / (data.length - 1 || 1);
-        doc.setDrawColor(171, 71, 188);
-        doc.setLineWidth(0.6);
-
-        data.forEach((d, i) => {
-          const px = gX + i * step;
-          const py = d.lluvia ? gY + 2 : gY + gH - 2;
-          const nextX = gX + (i + 1) * step;
-          doc.line(px, py, nextX, py);
-          if (i < data.length - 1) {
-            const nextY = data[i + 1].lluvia ? gY + 2 : gY + gH - 2;
-            doc.line(nextX, py, nextX, nextY);
-          }
-        });
-
-        doc.setDrawColor(60);
-        doc.setLineWidth(0.3);
-        doc.line(gX, gY, gX, gY + gH);
-        doc.line(gX, gY + gH, gX + gW, gY + gH);
-      };
-
       doc.setFillColor(255, 255, 255);
       doc.rect(0, 0, pageW, pageH, "F");
 
@@ -292,7 +250,6 @@ export default function ReportesPage() {
         drawChart(doc, lecturasFiltradas, "peso", "Peso (kg)", "#8bc34a", margin, 32, cw, ch);
         drawChart(doc, lecturasFiltradas, "temperatura", "Temperatura (C)", "#ff5722", margin + cw + 10, 32, cw, ch);
         drawChart(doc, lecturasFiltradas, "humedad", "Humedad (%)", "#03a9f4", margin, 32 + ch + 12, cw, ch);
-        drawRainChart(doc, lecturasFiltradas, margin + cw + 10, 32 + ch + 12, cw, ch);
       }
 
       doc.addPage();
@@ -302,8 +259,8 @@ export default function ReportesPage() {
       doc.setTextColor(0);
       doc.text("Detalle de Lecturas", margin, 20);
 
-      const colWidths = [80, 40, 40, 40, 40, 40];
-      const headers = ["Fecha", "Temp", "Humedad", "Peso", "Sonido", "Lluvia"];
+      const colWidths = [90, 42, 42, 42, 42];
+      const headers = ["Fecha", "Temp", "Humedad", "Peso", "Sonido"];
       const totalW = colWidths.reduce((a, b) => a + b, 0);
 
       let tableY = 30;
@@ -338,8 +295,7 @@ export default function ReportesPage() {
           l.temperatura != null ? `${l.temperatura} C` : "-",
           l.humedad != null ? `${l.humedad} %` : "-",
           l.peso != null ? `${l.peso} kg` : "-",
-          l.sonido != null ? `${l.sonido} dB` : "-",
-          l.lluvia ? "Si" : "No"
+          l.sonido != null ? `${l.sonido} dB` : "-"
         ];
         doc.setFontSize(8);
         let cellX = margin;
@@ -498,18 +454,6 @@ export default function ReportesPage() {
                   </ResponsiveContainer>
                 </section>
 
-                <section className="sensores-card">
-                  <h3>{t("det.lluviaLabel")}</h3>
-                  <ResponsiveContainer width="100%" height={260}>
-                    <LineChart data={lecturasFiltradas}>
-                      <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                      <XAxis dataKey="fecha_registro" tickFormatter={(v) => formatFechaCorta(v, locale)} stroke="#aaa" tick={{ fontSize: 11 }} />
-                      <YAxis stroke="#aaa" domain={[0, 1]} ticks={[0, 1]} tickFormatter={(v) => v === 1 ? "Sí" : "No"} />
-                      <Tooltip labelFormatter={(v) => formatFecha(v, locale)} contentStyle={{ backgroundColor: "#1e1e1e", border: "1px solid #444" }} />
-                      <Line type="stepAfter" dataKey="lluvia" stroke="#ab47bc" strokeWidth={2} dot={{ r: 3 }} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </section>
               </div>
 
               <section className="sensores-card" style={{ marginTop: 20 }}>
@@ -523,7 +467,6 @@ export default function ReportesPage() {
                         <th>{t("rep.thHum")}</th>
                         <th>{t("rep.thWeight")}</th>
                         <th>{t("rep.thSound")}</th>
-                        <th>{t("rep.thRain")}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -534,7 +477,6 @@ export default function ReportesPage() {
                           <td>{l.humedad != null ? `${l.humedad}%` : "—"}</td>
                           <td>{l.peso != null ? `${l.peso} kg` : "—"}</td>
                           <td>{l.sonido != null ? `${l.sonido} dB` : "—"}</td>
-                          <td>{l.lluvia === true || l.lluvia === 1 ? "🌧️ Sí" : "☀️ No"}</td>
                         </tr>
                       ))}
                     </tbody>

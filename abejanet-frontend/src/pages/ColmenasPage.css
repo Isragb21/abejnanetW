@@ -50,18 +50,22 @@
 /* ====== Toolbar (buscador + selects) ====== */
 .toolbar {
   display: flex;
+  flex: 1 1 620px;
   gap: 12px;
   align-items: center;
   flex-wrap: wrap;
+  min-width: 0;
 }
 
 .input-wrap {
   position: relative;
-  min-width: 180px;
-  max-width: 280px;
+  flex: 1 1 220px;
+  min-width: min(180px, 100%);
+  max-width: 320px;
 }
 
 .input {
+  box-sizing: border-box;
   width: 100%;
   padding: 12px 40px 12px 14px;
   border-radius: 12px;
@@ -96,18 +100,24 @@
 
 .selects {
   display: flex;
+  flex: 1 1 360px;
   gap: 10px;
   flex-wrap: wrap;
+  min-width: 0;
 }
 
 .select {
   display: grid;
+  flex: 1 1 160px;
+  min-width: 0;
   gap: 6px;
   color: #aaaaaa;
   font-size: 0.85rem;
 }
 
 .select select {
+  box-sizing: border-box;
+  width: 100%;
   padding: 10px 12px;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -285,23 +295,23 @@
 .empty-box.error { border-color: rgba(255, 100, 100, 0.5); }
 
 /* ===== LIGHT MODE ===== */
-[data-theme="light"] .stat-chip { background: #ece8de; border-color: #e0e0e0; }
+[data-theme="light"] .stat-chip { background: #d4d1c9; border-color: #c2bfb7; }
 [data-theme="light"] .stat-label { color: #888; }
 [data-theme="light"] .stat-value { color: #222; }
-[data-theme="light"] .input { background: #ece8de; color: #333; border: 1px solid #ccc; }
+[data-theme="light"] .input { background: #d4d1c9; color: #333; border: 1px solid #bdbab2; }
 [data-theme="light"] .input:focus { border-color: #d4940a; }
-[data-theme="light"] .kbd { background: #f0f0f0; border-color: #ccc; color: #666; }
+[data-theme="light"] .kbd { background: #e1ded6; border-color: #bdbab2; color: #666; }
 [data-theme="light"] .select { color: #555; }
-[data-theme="light"] .select select { background: #ece8de; color: #333; border: 1px solid #ccc; }
-[data-theme="light"] .card-colmena { background: #ece8de; border-color: #e0e0e0; color: #222; }
+[data-theme="light"] .select select { background: #d4d1c9; color: #333; border: 1px solid #bdbab2; }
+[data-theme="light"] .card-colmena { background: #dedbd3; border-color: #c8c5bd; color: #222; }
 [data-theme="light"] .card-colmena:hover { border-color: #d4940a; box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
 [data-theme="light"] .colmena-nombre { color: #b8860b; }
-[data-theme="light"] .badge-apiario { background: rgba(0,0,0,0.04); border-color: #e0e0e0; color: #555; }
+[data-theme="light"] .badge-apiario { background: rgba(0,0,0,0.06); border-color: #c8c5bd; color: #555; }
 [data-theme="light"] .colmena-desc { color: #666; }
-[data-theme="light"] .card-foot { border-top-color: #eee; }
-[data-theme="light"] .pill { background: #ddd8ce; border-color: #e0e0e0; color: #333; }
-[data-theme="light"] .pill:hover { background: #d5d0c6; }
-[data-theme="light"] .empty-box { background: #e5e1d7; border-color: #e0e0e0; }
+[data-theme="light"] .card-foot { border-top-color: #c8c5bd; }
+[data-theme="light"] .pill { background: #d4d1c9; border-color: #c2bfb7; color: #333; }
+[data-theme="light"] .pill:hover { background: #cbc8c0; }
+[data-theme="light"] .empty-box { background: #d4d1c9; border-color: #c2bfb7; }
 [data-theme="light"] .empty-box h3 { color: #555; }
 [data-theme="light"] .empty-box p { color: #888; }
 [data-theme="light"] .skeleton .sk-line { background: rgba(0,0,0,0.06); }

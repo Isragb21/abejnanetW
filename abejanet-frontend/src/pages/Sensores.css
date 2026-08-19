@@ -309,15 +309,15 @@
 
 /* ===== LIGHT MODE ===== */
 [data-theme="light"] .sensores-layout {
-  background: #ddd8ce;
+  background: #c9c6be;
   color: #222;
 }
 [data-theme="light"] .sensores-badge { color: #b8860b; }
 [data-theme="light"] .sensores-subtitle { color: #666; }
 [data-theme="light"] .sensores-resumen-pill { background: #ece8de; border-color: #ccc; color: #333; }
 [data-theme="light"] .sensores-card {
-  background: #ece8de;
-  border: 1px solid #e0e0e0;
+  background: #dedbd3;
+  border: 1px solid #c8c5bd;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 [data-theme="light"] .form-sensor-filtros select,
