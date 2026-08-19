@@ -286,23 +286,23 @@
 .empty-box.error { border-color: rgba(255, 100, 100, 0.5); }
 
 /* ===== LIGHT MODE ===== */
-[data-theme="light"] .stat-chip { background: #f8f5ee; border-color: #e0e0e0; }
+[data-theme="light"] .stat-chip { background: #ece8de; border-color: #e0e0e0; }
 [data-theme="light"] .stat-label { color: #888; }
 [data-theme="light"] .stat-value { color: #222; }
-[data-theme="light"] .input { background: #f8f5ee; color: #333; border: 1px solid #ccc; }
+[data-theme="light"] .input { background: #ece8de; color: #333; border: 1px solid #ccc; }
 [data-theme="light"] .input:focus { border-color: #d4940a; }
 [data-theme="light"] .kbd { background: #f0f0f0; border-color: #ccc; color: #666; }
 [data-theme="light"] .select { color: #555; }
-[data-theme="light"] .select select { background: #f8f5ee; color: #333; border: 1px solid #ccc; }
-[data-theme="light"] .card-colmena { background: #f8f5ee; border-color: #e0e0e0; color: #222; }
+[data-theme="light"] .select select { background: #ece8de; color: #333; border: 1px solid #ccc; }
+[data-theme="light"] .card-colmena { background: #ece8de; border-color: #e0e0e0; color: #222; }
 [data-theme="light"] .card-colmena:hover { border-color: #d4940a; box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
 [data-theme="light"] .colmena-nombre { color: #b8860b; }
 [data-theme="light"] .badge-apiario { background: rgba(0,0,0,0.04); border-color: #e0e0e0; color: #555; }
 [data-theme="light"] .colmena-desc { color: #666; }
 [data-theme="light"] .card-foot { border-top-color: #eee; }
-[data-theme="light"] .pill { background: #f0ede5; border-color: #e0e0e0; color: #333; }
-[data-theme="light"] .pill:hover { background: #e8e5dd; }
-[data-theme="light"] .empty-box { background: #f5f2eb; border-color: #e0e0e0; }
+[data-theme="light"] .pill { background: #ddd8ce; border-color: #e0e0e0; color: #333; }
+[data-theme="light"] .pill:hover { background: #d5d0c6; }
+[data-theme="light"] .empty-box { background: #e5e1d7; border-color: #e0e0e0; }
 [data-theme="light"] .empty-box h3 { color: #555; }
 [data-theme="light"] .empty-box p { color: #888; }
 [data-theme="light"] .skeleton .sk-line { background: rgba(0,0,0,0.06); }

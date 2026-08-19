@@ -309,36 +309,36 @@
 
 /* ===== LIGHT MODE ===== */
 [data-theme="light"] .sensores-layout {
-  background: #f0ede5;
+  background: #ddd8ce;
   color: #222;
 }
 [data-theme="light"] .sensores-badge { color: #b8860b; }
 [data-theme="light"] .sensores-subtitle { color: #666; }
-[data-theme="light"] .sensores-resumen-pill { background: #f8f5ee; border-color: #ccc; color: #333; }
+[data-theme="light"] .sensores-resumen-pill { background: #ece8de; border-color: #ccc; color: #333; }
 [data-theme="light"] .sensores-card {
-  background: #f8f5ee;
+  background: #ece8de;
   border: 1px solid #e0e0e0;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 [data-theme="light"] .form-sensor-filtros select,
 [data-theme="light"] .form-sensor-filtros input {
-  background-color: #f8f5ee;
+  background-color: #ece8de;
   color: #333;
   border: 1px solid #ccc;
 }
 [data-theme="light"] .btn-secundario { background-color: #eee; color: #333; border: 1px solid #ccc; }
 [data-theme="light"] .btn-secundario:hover { background-color: #ddd; }
-[data-theme="light"] .tabla-sensores { background: #f8f5ee; color: #333; }
-[data-theme="light"] .tabla-sensores thead { background: #f5f2eb; }
+[data-theme="light"] .tabla-sensores { background: #ece8de; color: #333; }
+[data-theme="light"] .tabla-sensores thead { background: #e5e1d7; }
 [data-theme="light"] .tabla-sensores th { color: #b8860b; border-bottom-color: #eee; }
 [data-theme="light"] .tabla-sensores td { border-bottom-color: #eee; }
-[data-theme="light"] .tabla-sensores tbody tr:hover { background: #f0ede5; }
+[data-theme="light"] .tabla-sensores tbody tr:hover { background: #ddd8ce; }
 [data-theme="light"] .estado-pill { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.12); }
 [data-theme="light"] .cuenta-loading { color: #b8860b; }
 [data-theme="light"] .modal-overlay { background-color: rgba(0,0,0,0.4); }
-[data-theme="light"] .modal-content { background: #f8f5ee; border: 1px solid #e0e0e0; box-shadow: 0 15px 40px rgba(0,0,0,0.15); }
+[data-theme="light"] .modal-content { background: #ece8de; border: 1px solid #e0e0e0; box-shadow: 0 15px 40px rgba(0,0,0,0.15); }
 [data-theme="light"] .modal-content h2 { color: #b8860b; }
 [data-theme="light"] .form-sensor-modal label { color: #555; }
 [data-theme="light"] .form-sensor-modal input,
-[data-theme="light"] .form-sensor-modal select { background: #f5f2eb; color: #333; border: 1px solid #ccc; }
+[data-theme="light"] .form-sensor-modal select { background: #e5e1d7; color: #333; border: 1px solid #ccc; }
 [data-theme="light"] .sensores-empty { color: #666; }

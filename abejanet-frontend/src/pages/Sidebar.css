@@ -130,7 +130,7 @@
 
 /* ===== LIGHT MODE ===== */
 [data-theme="light"] .sidebar-global {
-  background: #f8f5ee;
+  background: #ece8de;
   border-right: 1px solid #e0e0e0;
 }
 [data-theme="light"] .sidebar-text { color: #222; }

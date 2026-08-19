@@ -116,7 +116,7 @@ export default function ColmenaDetallePage() {
   const { theme } = useTheme();
 
   const tooltipStyle = theme === "light"
-    ? { backgroundColor: "#f8f5ee", border: "1px solid #ccc", color: "#333" }
+    ? { backgroundColor: "#ece8de", border: "1px solid #ccc", color: "#333" }
     : { backgroundColor: "#1e1e1e", border: "1px solid #444", color: "#eee" };
 
   const [colmena, setColmena] = useState(null);

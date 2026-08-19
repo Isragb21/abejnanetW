@@ -465,14 +465,14 @@
   background:
     radial-gradient(circle at 10% 0, rgba(255, 179, 0, 0.16) 0, transparent 50%),
     radial-gradient(circle at 80% 80%, rgba(255, 179, 0, 0.18) 0, transparent 55%),
-    linear-gradient(145deg, rgba(248, 245, 238, 0.94), rgba(255, 244, 214, 0.96));
+    linear-gradient(145deg, rgba(236, 232, 222, 0.94), rgba(255, 244, 214, 0.96));
 }
 
 [data-theme="light"] .login-full { color: #1f1f1f; }
 
 [data-theme="light"] .login-card {
   background: radial-gradient(circle at top, rgba(255, 230, 0, 0.14), transparent 60%),
-    rgba(248, 245, 238, 0.95);
+    rgba(236, 232, 222, 0.95);
   border: 1px solid rgba(180, 150, 0, 0.25);
   box-shadow: 0 26px 60px rgba(90, 70, 0, 0.25);
 }
@@ -490,12 +490,12 @@
 [data-theme="light"] .login-bullets li { color: #3f3f3f; }
 
 [data-theme="light"] .pill-meta {
-  background: rgba(248, 245, 238, 0.85);
+  background: rgba(236, 232, 222, 0.85);
   border: 1px solid rgba(180, 150, 0, 0.25);
   color: #3f3f3f;
 }
 
-[data-theme="light"] .login-panel { background: rgba(248, 245, 238, 0.96); }
+[data-theme="light"] .login-panel { background: rgba(236, 232, 222, 0.96); }
 
 [data-theme="light"] .panel-head h2 { color: #1f1f1f; }
 
@@ -505,7 +505,7 @@
 
 [data-theme="light"] .input {
   border: 1px solid rgba(120, 120, 120, 0.6);
-  background: #f8f5ee;
+  background: #ece8de;
   color: #1f1f1f;
 }
 
@@ -514,7 +514,7 @@
 [data-theme="light"] .input:focus {
   border-color: var(--honey-500);
   box-shadow: 0 0 0 1px rgba(255, 179, 0, 0.5);
-  background: #f8f5ee;
+  background: #ece8de;
 }
 
 [data-theme="light"] .icon { color: #9ca3af; }
