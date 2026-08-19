@@ -16,7 +16,7 @@
 
 .sidebar-top {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: hidden;
   min-height: 0;
 }
 
@@ -127,3 +127,19 @@
   .sidebar-btn-active { border-left: none; border-bottom: 3px solid #ffe600; border-radius: 8px; }
   .sidebar-bottom { display: none; }
 }
+
+/* ===== LIGHT MODE ===== */
+[data-theme="light"] .sidebar-global {
+  background: #ffffff;
+  border-right: 1px solid #e0e0e0;
+}
+[data-theme="light"] .sidebar-text { color: #222; }
+[data-theme="light"] .sidebar-btn { color: #555; }
+[data-theme="light"] .sidebar-btn:hover { background: rgba(255, 179, 0, 0.1); color: #222; }
+[data-theme="light"] .sidebar-btn-active {
+  background: linear-gradient(120deg, rgba(255, 179, 0, 0.12), rgba(255, 213, 74, 0.06));
+  color: #d4940a;
+  border-left: 4px solid #d4940a;
+}
+[data-theme="light"] .sidebar-bottom { border-top-color: #e0e0e0; }
+[data-theme="light"] .sidebar-btn::-webkit-scrollbar-thumb { background: rgba(200, 160, 0, 0.2); }

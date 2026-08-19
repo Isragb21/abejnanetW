@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import API_BASE_URL from "../api";
 import Sidebar from "./Sidebar";
-import "./Crud_usu.css"; 
-import "./Sensores.css"; 
+import { useLang } from "../i18n";
+import "./Crud_usu.css";
+import "./Sensores.css";
 
 export default function Crud_usu() {
+  const { t } = useLang();
   const [usuarios, setUsuarios] = useState([]);
   const [roles, setRoles] = useState([]); 
   const [loading, setLoading] = useState(true);
@@ -132,19 +134,19 @@ export default function Crud_usu() {
 
   // Ejecuta la petición DELETE para remover el registro de la tabla
   const handleDelete = (id) => {
-    if (window.confirm("¿Seguro que deseas eliminar este usuario? No podrá volver a iniciar sesión.")) {
+    if (window.confirm(t("usu.confirmDelete"))) {
       fetch(`${API_BASE_URL}/usuarios/${id}`, { method: "DELETE" })
         .then(() => cargarUsuarios())
-        .catch((err) => console.error("Error al eliminar usuario:", err));
+        .catch((err) => console.error("Error:", err));
     }
   };
 
   // Ejecuta la petición PUT a la ruta específica para establecer el valor del secreto_2fa como NULL
   const handleReset2FA = (id, nombre) => {
-    if (window.confirm(`¿Seguro que deseas reiniciar el acceso 2FA de ${nombre}? En su próximo inicio de sesión se le pedirá configurar un nuevo dispositivo.`)) {
+    if (window.confirm(t("usu.confirmReset2FA", { name: nombre }))) {
       fetch(`${API_BASE_URL}/usuarios/${id}/reset-2fa`, { method: "PUT" })
         .then(async (res) => {
-          if (!res.ok) throw new Error("Ocurrió un error al intentar reiniciar la autenticación de 2 pasos.");
+          if (!res.ok) throw new Error(t("usu.reset2faError"));
           const data = await res.json();
           alert(data.message);
         })
@@ -164,40 +166,40 @@ export default function Crud_usu() {
       <main className="sensores-main">
         <header className="sensores-header">
           <div>
-            <p className="sensores-badge">Administración</p>
-            <h1>Gestión de Usuarios</h1>
-            <p className="sensores-subtitle">Administra el acceso y los roles de las personas en el sistema.</p>
+            <p className="sensores-badge">{t("usu.badge")}</p>
+            <h1>{t("usu.title")}</h1>
+            <p className="sensores-subtitle">{t("usu.subtitle")}</p>
           </div>
           <div className="sensores-header-resumen">
-            <span className="sensores-resumen-pill">Total: <strong>{usuariosFiltrados.length}</strong></span>
+            <span className="sensores-resumen-pill">{t("common.copyTotal")} <strong>{usuariosFiltrados.length}</strong></span>
           </div>
         </header>
 
         <section className="sensores-card" style={{ paddingBottom: '16px' }}>
           <div className="form-usuario-filtros" style={{ marginBottom: 0 }}>
-            <input 
-              type="text" 
-              placeholder="Buscar por correo electrónico..." 
-              value={filtroCorreo} 
-              onChange={(e) => setFiltroCorreo(e.target.value)} 
+            <input
+              type="text"
+              placeholder={t("usu.search")}
+              value={filtroCorreo}
+              onChange={(e) => setFiltroCorreo(e.target.value)}
             />
-            <button type="button" className="btn-secundario" onClick={limpiarFiltros}>Limpiar</button>
+            <button type="button" className="btn-secundario" onClick={limpiarFiltros}>{t("sensores.clearFilters")}</button>
           </div>
         </section>
 
         <section className="sensores-card">
           {loading ? (
-            <div className="cuenta-loading">Cargando usuarios...</div>
+            <div className="cuenta-loading">{t("usu.loading")}</div>
           ) : (
             <div className="tabla-wrapper">
               <table className="tabla-usuarios">
                 <thead>
                   <tr>
-                    <th>Nombre</th>
-                    <th>Correo</th>
-                    <th>Rol</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
+                    <th>{t("usu.thName")}</th>
+                    <th>{t("usu.thEmail")}</th>
+                    <th>{t("usu.thRole")}</th>
+                    <th>{t("usu.thState")}</th>
+                    <th>{t("usu.thActions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -213,17 +215,17 @@ export default function Crud_usu() {
                         </td>
                         <td>
                           <span className={`estado-pill ${usu.esta_activo ? "estado-activo" : "estado-inactivo"}`}>
-                            {usu.esta_activo ? "Activo" : "Inactivo"}
+                            {usu.esta_activo ? t("common.active") : t("common.inactive")}
                           </span>
                         </td>
                         <td className="tabla-usuarios-actions">
-                          <button className="editar" onClick={() => handleEdit(usu)} title="Editar Usuario">✏️</button>
-                          <button className="eliminar" onClick={() => handleDelete(usu.id)} title="Eliminar Usuario">🗑️</button>
+                           <button className="editar" onClick={() => handleEdit(usu)} title={t("common.edit")}>✏️</button>
+                          <button className="eliminar" onClick={() => handleDelete(usu.id)} title={t("common.delete")}>🗑️</button>
                           <button 
                             className="btn-secundario" 
                             style={{ padding: '4px 8px', marginLeft: '5px', fontSize: '0.9rem' }} 
                             onClick={() => handleReset2FA(usu.id, usu.nombre)}
-                            title="Reiniciar QR de Autenticación"
+                            title={t("usu.actionReset2FA")}
                           >
                             🔄 2FA
                           </button>
@@ -232,7 +234,7 @@ export default function Crud_usu() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="5" className="usuarios-empty">No hay usuarios registrados con ese correo.</td>
+                      <td colSpan="5" className="usuarios-empty">{t("usu.empty")}</td>
                     </tr>
                   )}
                 </tbody>
@@ -242,7 +244,7 @@ export default function Crud_usu() {
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
             <button className="btn-primario" onClick={handleOpenCreate}>
-              ➕ Nuevo Usuario
+              ➕ {t("usu.add")}
             </button>
           </div>
         </section>
@@ -250,48 +252,48 @@ export default function Crud_usu() {
         {showModal && (
           <div className="modal-overlay">
             <div className="modal-content">
-              <h2>{editing ? "Editar Usuario" : "Crear Nuevo Usuario"}</h2>
-              
+              <h2>{editing ? t("usu.editTitle") : t("usu.createTitle")}</h2>
+
               <form className="form-usuario-modal" onSubmit={handleSubmit}>
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <div style={{ flex: 1 }}>
-                    <label>Nombre:</label>
-                    <input type="text" name="nombre" placeholder="Nombre" value={formData.nombre} onChange={handleChange} required />
+                    <label>{t("usu.nameLabel")}</label>
+                    <input type="text" name="nombre" placeholder={t("usu.nameLabel")} value={formData.nombre} onChange={handleChange} required />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <label>Apellidos:</label>
-                    <input type="text" name="apellido_paterno" placeholder="Paterno" value={formData.apellido_paterno} onChange={handleChange} />
+                    <label>{t("usu.lastLabel")}</label>
+                    <input type="text" name="apellido_paterno" placeholder={t("usu.lastPh")} value={formData.apellido_paterno} onChange={handleChange} />
                   </div>
                 </div>
 
-                <label>Correo Electrónico:</label>
+                <label>{t("usu.emailLabel")}</label>
                 <input type="email" name="correo_electronico" placeholder="usuario@abejanet.com" value={formData.correo_electronico} onChange={handleChange} required />
-                
+
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <div style={{ flex: 1 }}>
-                    <label>Rol en el sistema:</label>
+                    <label>{t("usu.roleLabel")}</label>
                     <select name="rol_id" value={formData.rol_id} onChange={handleChange} required >
-                      <option value="">-- Seleccionar --</option>
+                      <option value="">-- {t("usu.select")} --</option>
                       {roles.map((rol) => (
                         <option key={rol.id} value={rol.id}>{rol.nombre}</option>
                       ))}
                     </select>
                   </div>
                   <div style={{ flex: 1 }}>
-                    <label>Estado de la cuenta:</label>
+                    <label>{t("usu.stateLabel")}</label>
                     <select name="esta_activo" value={formData.esta_activo} onChange={handleChange} required >
-                       <option value="true">Activo (Permitir acceso)</option>
-                       <option value="false">Inactivo (Bloquear acceso)</option>
+                       <option value="true">{t("usu.stateActive")}</option>
+                       <option value="false">{t("usu.stateInactive")}</option>
                     </select>
                   </div>
                 </div>
 
-                <label>{editing ? "Cambiar Contraseña (Dejar vacío si no cambia)" : "Contraseña Temporal"}</label>
+                <label>{editing ? t("usu.passwordEdit") : t("usu.passwordCreate")}</label>
                 <input type="password" name="contrasena" placeholder="******" value={formData.contrasena} onChange={handleChange} required={!editing} />
 
                 <div className="modal-actions">
-                  <button type="button" className="btn-secundario" onClick={handleCloseModal}>Cancelar</button>
-                  <button type="submit" className="btn-primario">{editing ? "Guardar Cambios" : "Crear Usuario"}</button>
+                  <button type="button" className="btn-secundario" onClick={handleCloseModal}>{t("common.cancel")}</button>
+                  <button type="submit" className="btn-primario">{editing ? t("usu.save") : t("usu.create")}</button>
                 </div>
               </form>
             </div>

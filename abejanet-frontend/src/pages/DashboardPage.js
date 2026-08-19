@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import API_BASE_URL from "../api"; 
 import Sidebar from "./Sidebar"; // 👈 Nuestro menú global
+import { useLang } from "../i18n";
 import "./Sensores.css"; // 👈 Para heredar el fondo oscuro
 import "./DashboardPage.css";
 
@@ -15,6 +16,8 @@ function StatChip({ label, value }) {
 }
 
 export default function DashboardPage() {
+  const { t } = useLang();
+
   // Estado para los datos reales del backend
   const [kpis, setKpis] = useState({
     colmenasTotales: 0,
@@ -25,7 +28,7 @@ export default function DashboardPage() {
 
   // Extraemos solo el nombre para dar la bienvenida
   const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
-  const nombre = usuario?.nombre || "Apicultor";
+  const nombre = usuario?.nombre || t("dash.fallbackName");
 
   // 📈 Cargar estadísticas reales desde el backend local
   useEffect(() => {
@@ -56,31 +59,31 @@ export default function DashboardPage() {
         
         <header className="dashboard-header">
           <div>
-            <p className="sensores-badge">Panel general</p>
-            <h1>Bienvenido, {nombre.split(" ")[0]} 👋</h1>
+            <p className="sensores-badge">{t("dash.badge")}</p>
+            <h1>{t("dash.welcome", { name: nombre.split(" ")[0] })} 👋</h1>
             <p className="sensores-subtitle">
-              Monitorea el estado de tus apiarios, colmenas y sensores en tiempo real.
+              {t("dash.subtitle")}
             </p>
           </div>
 
           <div className="dashboard-header-stats">
-            <StatChip label="Colmenas" value={kpis.colmenasTotales} />
-            <StatChip label="Apiarios" value={kpis.apiarios} />
-            <StatChip label="Sensores activos" value={kpis.sensoresActivos} />
-            <StatChip label="Alertas hoy" value={kpis.alertasHoy} />
+            <StatChip label={t("dash.statColmenas")} value={kpis.colmenasTotales} />
+            <StatChip label={t("dash.statApiarios")} value={kpis.apiarios} />
+            <StatChip label={t("dash.statSensores")} value={kpis.sensoresActivos} />
+            <StatChip label={t("dash.statAlertas")} value={kpis.alertasHoy} />
           </div>
         </header>
 
         {/* Tarjeta hero con CTA */}
         <section className="dashboard-card dashboard-hero">
           <div>
-            <h2 style={{ margin: "0 0 6px 0" }}>Visión rápida de tu sistema 🐝</h2>
+            <h2 style={{ margin: "0 0 6px 0" }}>{t("dash.heroTitle")}</h2>
             <p style={{ margin: "0 0 12px 0", color: "#cccccc" }}>
-              Revisa tus registros y genera reportes para analizar la producción.
+              {t("dash.heroText")}
             </p>
             <div className="dashboard-hero-actions">
-              <Link to="/colmenas" className="btn-primario">Ver colmenas</Link>
-              <Link to="/sensores" className="btn-secundario">Gestionar sensores</Link>
+              <Link to="/colmenas" className="btn-primario">{t("dash.btnColmenas")}</Link>
+              <Link to="/sensores" className="btn-secundario">{t("dash.btnSensores")}</Link>
             </div>
           </div>
         </section>
@@ -88,31 +91,31 @@ export default function DashboardPage() {
         {/* Grid de tarjetas de información */}
         <section className="dashboard-grid">
           <article className="dashboard-card">
-            <h3>Resumen de tus colmenas</h3>
-            <p>Tienes <strong>{kpis.colmenasTotales}</strong> colmenas en <strong>{kpis.apiarios}</strong> apiarios.</p>
+            <h3>{t("dash.card1Title")}</h3>
+            <p>{t("dash.card1Text", { colmenas: kpis.colmenasTotales, apiarios: kpis.apiarios })}</p>
             <ul className="dashboard-list">
-              <li>Registrar nuevas colmenas.</li>
-              <li>Actualizar ubicaciones.</li>
-              <li>Consultar histórico.</li>
+              <li>{t("dash.card1Li1")}</li>
+              <li>{t("dash.card1Li2")}</li>
+              <li>{t("dash.card1Li3")}</li>
             </ul>
           </article>
 
           <article className="dashboard-card">
-            <h3>Estado de sensores</h3>
-            <p><strong>{kpis.sensoresActivos}</strong> dispositivos enviando datos de peso y temperatura.</p>
-            <p className="dashboard-note">Gestiona la instalación desde el módulo de Sensores.</p>
+            <h3>{t("dash.card2Title")}</h3>
+            <p>{t("dash.card2Text", { sensores: kpis.sensoresActivos })}</p>
+            <p className="dashboard-note">{t("dash.card2Note")}</p>
           </article>
 
           <article className="dashboard-card">
-            <h3>Reportes y análisis</h3>
-            <p>Descarga reportes en PDF/CSV y visualiza gráficas de rendimiento por temporada.</p>
+            <h3>{t("dash.card3Title")}</h3>
+            <p>{t("dash.card3Text")}</p>
           </article>
 
           <article className="dashboard-card dashboard-tips">
-            <h3>Buenas prácticas</h3>
+            <h3>{t("dash.card4Title")}</h3>
             <ul className="dashboard-list">
-              <li>Revisa físicamente tus colmenas semanalmente.</li>
-              <li>Registra cambios de reina y tratamientos.</li>
+              <li>{t("dash.card4Li1")}</li>
+              <li>{t("dash.card4Li2")}</li>
             </ul>
           </article>
         </section>
@@ -130,9 +133,9 @@ export default function DashboardPage() {
           color: '#888',
           fontSize: '0.85rem'
         }}>
-          <span>&copy; {new Date().getFullYear()} AbejaNet. Todos los derechos reservados.</span>
+          <span>&copy; {new Date().getFullYear()} AbejaNet. {t("dash.footerRights")}</span>
           <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-            <span>📧 Soporte: <a href="mailto:soporte@abejanet.com" style={{ color: '#ffe600', textDecoration: 'none' }}>soporte@abejanet.com</a></span>
+            <span>📧 {t("dash.footerSupport")} <a href="mailto:soporte@abejanet.com" style={{ color: '#ffe600', textDecoration: 'none' }}>soporte@abejanet.com</a></span>
             <span style={{ background: 'rgba(255,255,255,0.05)', padding: '4px 8px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>
               v3.5.0
             </span>

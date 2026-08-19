@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import API_BASE_URL from "../api";
 import Sidebar from "./Sidebar"; 
+import { useLang } from "../i18n";
 import "./Sensores.css"; 
 import "./Cuenta.css"; 
 
 export default function Cuenta() {
+  const { t } = useLang();
   const [usuario, setUsuario] = useState(null);
   const [editando, setEditando] = useState(false);
   const [formData, setFormData] = useState({});
@@ -36,8 +38,8 @@ export default function Cuenta() {
           setFormData({ ...userData, correo_electronico: correoBuscado });
         });
     } else {
-      setUsuario({ nombre: "Invitado", correo_electronico: "—", esta_activo: true });
-      setFormData({ nombre: "Invitado", correo_electronico: "—" });
+      setUsuario({ nombre: t("cue.guest"), correo_electronico: "—", esta_activo: true });
+      setFormData({ nombre: t("cue.guest"), correo_electronico: "—" });
     }
   }, []);
 
@@ -46,7 +48,7 @@ export default function Cuenta() {
 
   const guardarCambios = () => {
     if (!usuario?.id) {
-      alert("No se puede actualizar: falta el ID del usuario.");
+      alert(t("cue.noId"));
       return;
     }
 
@@ -67,11 +69,11 @@ export default function Cuenta() {
           ...data,
           correo: data.correo_electronico
         }));
-        alert("Perfil actualizado correctamente");
+        alert(t("cue.savedOk"));
       })
       .catch((err) => {
         console.error("Error:", err);
-        alert("Error al guardar cambios en el servidor local");
+        alert(t("cue.saveError"));
       });
   };
 
@@ -80,7 +82,7 @@ export default function Cuenta() {
       <div className="sensores-layout">
         <Sidebar />
         <main className="sensores-main" style={{ justifyContent: 'center', alignItems: 'center' }}>
-          <div className="cuenta-loading">Cargando datos de la base de datos...</div>
+          <div className="cuenta-loading">{t("cue.loading")}</div>
         </main>
       </div>
     );
@@ -106,25 +108,25 @@ export default function Cuenta() {
             <div className="cuenta-form">
               <input
                 name="nombre"
-                placeholder="Nombre"
+                placeholder={t("cue.name")}
                 value={formData.nombre || ""}
                 onChange={handleChange}
               />
               <input
                 name="apellido_paterno"
-                placeholder="Apellido paterno"
+                placeholder={t("cue.lastP")}
                 value={formData.apellido_paterno || ""}
                 onChange={handleChange}
               />
               <input
                 name="apellido_materno"
-                placeholder="Apellido materno"
+                placeholder={t("cue.lastM")}
                 value={formData.apellido_materno || ""}
                 onChange={handleChange}
               />
               <input
                 name="correo_electronico"
-                placeholder="Correo electrónico"
+                placeholder={t("cue.email")}
                 value={formData.correo_electronico || ""}
                 onChange={handleChange}
                 disabled
@@ -132,7 +134,7 @@ export default function Cuenta() {
 
               <div className="cuenta-botones">
                 <button onClick={guardarCambios} className="btn-guardar">
-                  Guardar Cambios
+                  {t("cue.save")}
                 </button>
                 <button
                   onClick={() => {
@@ -141,7 +143,7 @@ export default function Cuenta() {
                   }}
                   className="btn-cancelar"
                 >
-                  Cancelar
+                  {t("common.cancel")}
                 </button>
               </div>
             </div>
@@ -154,30 +156,30 @@ export default function Cuenta() {
 
               <div className="cuenta-info">
                 <div>
-                  <strong>Rol en el sistema</strong>
+                  <strong>{t("cue.roleLabel")}</strong>
                   <span>
-                    {usuario.rol_id === 1 ? "Administrador" : "Usuario"}
+                    {usuario.rol_id === 1 ? t("cue.admin") : t("cue.user")}
                   </span>
                 </div>
                 <div>
-                  <strong>Estado de cuenta</strong>
+                  <strong>{t("cue.stateLabel")}</strong>
                   <span>
                     {/* Hacemos la validación estricta para que NO ponga Inactivo si solo falta cargar */}
                     {usuario.esta_activo !== false ? (
-                      <span className="estado-activo">Activo</span>
+                      <span className="estado-activo">{t("common.active")}</span>
                     ) : (
-                      <span className="estado-inactivo">Inactivo</span>
+                      <span className="estado-inactivo">{t("common.inactive")}</span>
                     )}
                   </span>
                 </div>
                 <div>
-                  <strong>Registrado el</strong>
+                  <strong>{t("cue.registered")}</strong>
                   <span>{fechaCreacion}</span>
                 </div>
               </div>
 
               <button onClick={() => setEditando(true)} className="cuenta-btn">
-                Editar perfil
+                {t("cue.edit")}
               </button>
             </>
           )}

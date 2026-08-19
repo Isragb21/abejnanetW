@@ -6,6 +6,7 @@ import {
 import jsPDF from "jspdf";
 import API_BASE_URL from "../api";
 import Sidebar from "./Sidebar";
+import { useLang } from "../i18n";
 import "./Sensores.css";
 import "./ReportesPage.css";
 
@@ -18,14 +19,14 @@ const RANGOS = [
   { label: "Personalizado", days: 0 },
 ];
 
-function formatFecha(ms) {
-  return new Date(ms).toLocaleDateString("es-MX", {
+function formatFecha(ms, locale) {
+  return new Date(ms).toLocaleDateString(locale, {
     day: "2-digit", month: "short", year: "numeric",
   });
 }
 
-function formatFechaCorta(ms) {
-  return new Date(ms).toLocaleDateString("es-MX", {
+function formatFechaCorta(ms, locale) {
+  return new Date(ms).toLocaleDateString(locale, {
     day: "2-digit", month: "short",
   });
 }
@@ -45,6 +46,7 @@ function StatCard({ label, value, unit, color, icon }) {
 }
 
 export default function ReportesPage() {
+  const { t, locale } = useLang();
   const [colmenas, setColmenas] = useState([]);
   const [lecturasRaw, setLecturas] = useState([]);
   const [selectedColmena, setSelectedColmena] = useState("");
@@ -110,8 +112,8 @@ export default function ReportesPage() {
     };
   }, [lecturasFiltradas]);
 
-  const nombreColmena = colmenas.find(c => String(c.id) === String(selectedColmena))?.nombre || "Sin seleccionar";
-  const fechaGeneracion = new Date().toLocaleString("es-MX");
+  const nombreColmena = colmenas.find(c => String(c.id) === String(selectedColmena))?.nombre || t("reports.noSelected");
+  const fechaGeneracion = new Date().toLocaleString(locale);
 
   const handleDescargarPDF = async () => {
     if (!reportRef.current) return;
@@ -363,26 +365,25 @@ export default function ReportesPage() {
       <main className="sensores-main">
         <header className="sensores-header">
           <div>
-            <p className="sensores-badge">Reportes</p>
-            <h1>Análisis de Lecturas</h1>
-            <p className="sensores-subtitle">Visualiza el histórico y descarga reportes en PDF de tus sensores.</p>
+            <p className="sensores-badge">{t("rep.badge")}</p>
+            <h1>{t("rep.title")}</h1>
+            <p className="sensores-subtitle">{t("rep.subtitle")}</p>
           </div>
         </header>
 
-        {/* CONTROLES */}
         <section className="sensores-card">
           <div className="reportes-filtros">
             <div className="reportes-filtros-row">
               <label className="reporte-select">
-                <span>Colmena</span>
+                <span>{t("det.chipColmena")}</span>
                 <select value={selectedColmena} onChange={(e) => setSelectedColmena(e.target.value)}>
-                  <option value="">-- Selecciona --</option>
+                  <option value="">-- {t("common.select")} --</option>
                   {colmenas.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
                 </select>
               </label>
 
               <label className="reporte-select">
-                <span>Rango de tiempo</span>
+                <span>{t("rep.range")}</span>
                 <select value={rangoActivo} onChange={(e) => {
                   const val = Number(e.target.value);
                   setRangoActivo(val);
@@ -396,11 +397,11 @@ export default function ReportesPage() {
             {rangoActivo === 0 && (
               <div className="reportes-filtros-row">
                 <label className="reporte-select">
-                  <span>Desde</span>
+                  <span>{t("rep.from")}</span>
                   <input type="date" value={fechaDesde} onChange={(e) => setFechaDesde(e.target.value)} />
                 </label>
                 <label className="reporte-select">
-                  <span>Hasta</span>
+                  <span>{t("rep.to")}</span>
                   <input type="date" value={fechaHasta} onChange={(e) => setFechaHasta(e.target.value)} />
                 </label>
               </div>
@@ -412,40 +413,36 @@ export default function ReportesPage() {
                 disabled={!selectedColmena || generatingPdf}
                 onClick={handleDescargarPDF}
               >
-                {generatingPdf ? "Generando..." : "Descargar PDF"}
+                {generatingPdf ? t("rep.generating") : t("rep.download")}
               </button>
             </div>
           </div>
         </section>
 
-        {/* CONTENIDO DESCARGABLE */}
         <div ref={reportRef} className="reportes-printable">
-          {/* HEADER DEL REPORTE */}
           <div className="reportes-pdf-header">
-            <h2>AbejaNet — Reporte de Lecturas</h2>
-            <p>Colmena: <strong>{nombreColmena}</strong></p>
-            <p>Período: {rangoActivo > 0 ? `Últimos ${rangoActivo} días` : `${fechaDesde || "Inicio"} al ${fechaHasta || "Hoy"}`}</p>
-            <p>Generado: {fechaGeneracion}</p>
+            <h2>AbejaNet — {t("rep.header")}</h2>
+            <p>{t("rep.colmena")} <strong>{nombreColmena}</strong></p>
+            <p>{t("rep.period")} {rangoActivo > 0 ? `Últimos ${rangoActivo} días` : `${fechaDesde || "Inicio"} al ${fechaHasta || "Hoy"}`}</p>
+            <p>{t("rep.generated")} {fechaGeneracion}</p>
           </div>
 
           {loading ? (
-            <div className="cuenta-loading">Cargando datos...</div>
+            <div className="cuenta-loading">{t("rep.loading")}</div>
           ) : stats ? (
             <>
-              {/* KPIs */}
               <div className="reportes-stats-row">
-                <StatCard label="Lecturas totales" value={stats.total} color="#ffe600" icon="📊" />
-                <StatCard label="Peso promedio" value={stats.pesoProm?.toFixed(2)} unit=" kg" color="#8bc34a" icon="⚖️" />
-                <StatCard label="Temp. promedio" value={stats.tempProm?.toFixed(1)} unit="°C" color="#ff5722" icon="🌡️" />
-                <StatCard label="Humedad promedio" value={stats.humProm?.toFixed(1)} unit="%" color="#03a9f4" icon="💧" />
-                <StatCard label="Peso máx" value={stats.pesoMax?.toFixed(2)} unit=" kg" color="#66bb6a" icon="▲" />
-                <StatCard label="Peso mín" value={stats.pesoMin?.toFixed(2)} unit=" kg" color="#ef5350" icon="▼" />
+                <StatCard label={t("rep.statTotal")} value={stats.total} color="#ffe600" icon="📊" />
+                <StatCard label={t("rep.statAvgPeso")} value={stats.pesoProm?.toFixed(2)} unit=" kg" color="#8bc34a" icon="⚖️" />
+                <StatCard label={t("rep.statAvgTemp")} value={stats.tempProm?.toFixed(1)} unit="°C" color="#ff5722" icon="🌡️" />
+                <StatCard label={t("rep.statAvgHum")} value={stats.humProm?.toFixed(1)} unit="%" color="#03a9f4" icon="💧" />
+                <StatCard label={t("rep.statMaxPeso")} value={stats.pesoMax?.toFixed(2)} unit=" kg" color="#66bb6a" icon="▲" />
+                <StatCard label={t("rep.statMinPeso")} value={stats.pesoMin?.toFixed(2)} unit=" kg" color="#ef5350" icon="▼" />
               </div>
 
-              {/* GRÁFICAS */}
               <div className="reportes-grid">
                 <section className="sensores-card">
-                  <h3>Peso (kg)</h3>
+                  <h3>{t("det.pesoActual")} (kg)</h3>
                   <ResponsiveContainer width="100%" height={260}>
                     <AreaChart data={lecturasFiltradas}>
                       <defs>
@@ -455,16 +452,16 @@ export default function ReportesPage() {
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                      <XAxis dataKey="fecha_registro" tickFormatter={formatFechaCorta} stroke="#aaa" tick={{ fontSize: 11 }} />
+                      <XAxis dataKey="fecha_registro" tickFormatter={(v) => formatFechaCorta(v, locale)} stroke="#aaa" tick={{ fontSize: 11 }} />
                       <YAxis stroke="#aaa" />
-                      <Tooltip labelFormatter={formatFecha} contentStyle={{ backgroundColor: "#1e1e1e", border: "1px solid #444" }} />
+                      <Tooltip labelFormatter={(v) => formatFecha(v, locale)} contentStyle={{ backgroundColor: "#1e1e1e", border: "1px solid #444" }} />
                       <Area type="monotone" dataKey="peso" stroke="#8bc34a" fill="url(#gradPeso)" strokeWidth={2} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </section>
 
                 <section className="sensores-card">
-                  <h3>Temperatura (°C)</h3>
+                  <h3>{t("det.temperature")} (°C)</h3>
                   <ResponsiveContainer width="100%" height={260}>
                     <AreaChart data={lecturasFiltradas}>
                       <defs>
@@ -474,16 +471,16 @@ export default function ReportesPage() {
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                      <XAxis dataKey="fecha_registro" tickFormatter={formatFechaCorta} stroke="#aaa" tick={{ fontSize: 11 }} />
+                      <XAxis dataKey="fecha_registro" tickFormatter={(v) => formatFechaCorta(v, locale)} stroke="#aaa" tick={{ fontSize: 11 }} />
                       <YAxis stroke="#aaa" />
-                      <Tooltip labelFormatter={formatFecha} contentStyle={{ backgroundColor: "#1e1e1e", border: "1px solid #444" }} />
+                      <Tooltip labelFormatter={(v) => formatFecha(v, locale)} contentStyle={{ backgroundColor: "#1e1e1e", border: "1px solid #444" }} />
                       <Area type="monotone" dataKey="temperatura" stroke="#ff5722" fill="url(#gradTemp)" strokeWidth={2} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </section>
 
                 <section className="sensores-card">
-                  <h3>Humedad (%)</h3>
+                  <h3>{t("det.humidity")} (%)</h3>
                   <ResponsiveContainer width="100%" height={260}>
                     <AreaChart data={lecturasFiltradas}>
                       <defs>
@@ -493,47 +490,46 @@ export default function ReportesPage() {
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                      <XAxis dataKey="fecha_registro" tickFormatter={formatFechaCorta} stroke="#aaa" tick={{ fontSize: 11 }} />
+                      <XAxis dataKey="fecha_registro" tickFormatter={(v) => formatFechaCorta(v, locale)} stroke="#aaa" tick={{ fontSize: 11 }} />
                       <YAxis stroke="#aaa" />
-                      <Tooltip labelFormatter={formatFecha} contentStyle={{ backgroundColor: "#1e1e1e", border: "1px solid #444" }} />
+                      <Tooltip labelFormatter={(v) => formatFecha(v, locale)} contentStyle={{ backgroundColor: "#1e1e1e", border: "1px solid #444" }} />
                       <Area type="monotone" dataKey="humedad" stroke="#03a9f4" fill="url(#gradHum)" strokeWidth={2} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </section>
 
                 <section className="sensores-card">
-                  <h3>Lluvia</h3>
+                  <h3>{t("det.lluviaLabel")}</h3>
                   <ResponsiveContainer width="100%" height={260}>
                     <LineChart data={lecturasFiltradas}>
                       <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                      <XAxis dataKey="fecha_registro" tickFormatter={formatFechaCorta} stroke="#aaa" tick={{ fontSize: 11 }} />
+                      <XAxis dataKey="fecha_registro" tickFormatter={(v) => formatFechaCorta(v, locale)} stroke="#aaa" tick={{ fontSize: 11 }} />
                       <YAxis stroke="#aaa" domain={[0, 1]} ticks={[0, 1]} tickFormatter={(v) => v === 1 ? "Sí" : "No"} />
-                      <Tooltip labelFormatter={formatFecha} contentStyle={{ backgroundColor: "#1e1e1e", border: "1px solid #444" }} />
+                      <Tooltip labelFormatter={(v) => formatFecha(v, locale)} contentStyle={{ backgroundColor: "#1e1e1e", border: "1px solid #444" }} />
                       <Line type="stepAfter" dataKey="lluvia" stroke="#ab47bc" strokeWidth={2} dot={{ r: 3 }} />
                     </LineChart>
                   </ResponsiveContainer>
                 </section>
               </div>
 
-              {/* TABLA DE LECTURAS */}
               <section className="sensores-card" style={{ marginTop: 20 }}>
-                <h3>Detalle de lecturas ({lecturasFiltradas.length} registros)</h3>
+                <h3>{t("rep.detailTitle", { count: lecturasFiltradas.length })}</h3>
                 <div className="tabla-wrapper">
                   <table className="tabla-sensores">
                     <thead>
                       <tr>
-                        <th>Fecha</th>
-                        <th>Temperatura</th>
-                        <th>Humedad</th>
-                        <th>Peso</th>
-                        <th>Sonido</th>
-                        <th>Lluvia</th>
+                        <th>{t("rep.thDate")}</th>
+                        <th>{t("rep.thTemp")}</th>
+                        <th>{t("rep.thHum")}</th>
+                        <th>{t("rep.thWeight")}</th>
+                        <th>{t("rep.thSound")}</th>
+                        <th>{t("rep.thRain")}</th>
                       </tr>
                     </thead>
                     <tbody>
                       {lecturasFiltradas.slice().reverse().map((l, i) => (
                         <tr key={l.id || i}>
-                          <td>{new Date(l.fecha_registro).toLocaleString("es-MX")}</td>
+                          <td>{new Date(l.fecha_registro).toLocaleString(locale)}</td>
                           <td>{l.temperatura != null ? `${l.temperatura}°C` : "—"}</td>
                           <td>{l.humedad != null ? `${l.humedad}%` : "—"}</td>
                           <td>{l.peso != null ? `${l.peso} kg` : "—"}</td>
@@ -548,7 +544,7 @@ export default function ReportesPage() {
             </>
           ) : (
             <div className="empty-box">
-              {selectedColmena ? "No hay lecturas registradas para esta colmena en el período seleccionado." : "Selecciona una colmena y un rango de tiempo para generar el reporte."}
+              {selectedColmena ? t("rep.noDataSelected") : t("rep.noSelection")}
             </div>
           )}
         </div>

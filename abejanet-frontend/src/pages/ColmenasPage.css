@@ -284,3 +284,26 @@
 .empty-box h3 { margin: 0 0 8px 0; color: #aaa; }
 .empty-box p { color: #888; margin: 0; }
 .empty-box.error { border-color: rgba(255, 100, 100, 0.5); }
+
+/* ===== LIGHT MODE ===== */
+[data-theme="light"] .stat-chip { background: #fff; border-color: #e0e0e0; }
+[data-theme="light"] .stat-label { color: #888; }
+[data-theme="light"] .stat-value { color: #222; }
+[data-theme="light"] .input { background: #fff; color: #333; border: 1px solid #ccc; }
+[data-theme="light"] .input:focus { border-color: #d4940a; }
+[data-theme="light"] .kbd { background: #f0f0f0; border-color: #ccc; color: #666; }
+[data-theme="light"] .select { color: #555; }
+[data-theme="light"] .select select { background: #fff; color: #333; border: 1px solid #ccc; }
+[data-theme="light"] .card-colmena { background: #fff; border-color: #e0e0e0; color: #222; }
+[data-theme="light"] .card-colmena:hover { border-color: #d4940a; box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+[data-theme="light"] .colmena-nombre { color: #b8860b; }
+[data-theme="light"] .badge-apiario { background: rgba(0,0,0,0.04); border-color: #e0e0e0; color: #555; }
+[data-theme="light"] .colmena-desc { color: #666; }
+[data-theme="light"] .card-foot { border-top-color: #eee; }
+[data-theme="light"] .pill { background: #f5f5f0; border-color: #e0e0e0; color: #333; }
+[data-theme="light"] .pill:hover { background: #eee; }
+[data-theme="light"] .empty-box { background: #f9f9f6; border-color: #e0e0e0; }
+[data-theme="light"] .empty-box h3 { color: #555; }
+[data-theme="light"] .empty-box p { color: #888; }
+[data-theme="light"] .skeleton .sk-line { background: rgba(0,0,0,0.06); }
+[data-theme="light"] .skeleton::after { background: linear-gradient(90deg, transparent, rgba(0,0,0,0.03), transparent); }

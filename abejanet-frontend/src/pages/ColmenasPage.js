@@ -3,6 +3,7 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import API_BASE_URL from "../api"; 
 import Sidebar from "./Sidebar"; // 👈 Importamos nuestro menú mágico
+import { useLang } from "../i18n";
 import "./Sensores.css"; // 👈 Para heredar el layout oscuro
 import "./ColmenasPage.css"; // Solo para estilos específicos de las tarjetas
 
@@ -29,6 +30,8 @@ function SkeletonCard() {
 
 /* PÁGINA */
 export default function ColmenasPage() {
+  const { t } = useLang();
+
   const [colmenas, setColmenas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fail, setFail] = useState(false);
@@ -97,7 +100,7 @@ export default function ColmenasPage() {
   /* Eliminar colmena */
   const handleDelete = async (id, nombre) => {
     setErrorDelete("");
-    const ok = window.confirm(`¿Eliminar la colmena "${nombre}"? Esta acción no se puede deshacer.`);
+    const ok = window.confirm(t("col.confirmDelete", { name: nombre }));
     if (!ok) return;
 
     const prev = colmenas;
@@ -106,10 +109,10 @@ export default function ColmenasPage() {
 
     try {
       const res = await axios.delete(`${API_BASE_URL}/colmenas/${id}`);
-      if (res.status !== 200) throw new Error("No se pudo eliminar");
+      if (res.status !== 200) throw new Error(t("col.deleteFail"));
     } catch (e) {
       setColmenas(prev);
-      setErrorDelete(e?.response?.data?.error || e.message || "Error al eliminar");
+      setErrorDelete(e?.response?.data?.error || e.message || t("col.deleteFail"));
     } finally {
       setDeletingId(null);
     }
@@ -125,14 +128,14 @@ export default function ColmenasPage() {
         <div className="colmenas-container">
           <header className="sensores-header">
             <div>
-              <p className="sensores-badge">Panel de control</p>
-              <h1>Colmenas registradas</h1>
-              <p className="sensores-subtitle">Administra las colmenas de tus apiarios y ubicaciones.</p>
+              <p className="sensores-badge">{t("col.badge")}</p>
+              <h1>{t("col.title")}</h1>
+              <p className="sensores-subtitle">{t("col.subtitle")}</p>
             </div>
             <div className="colmenas-header-stats">
-              <StatChip label="Total" value={colmenas.length} />
-              <StatChip label="Mostrando" value={filtered.length} />
-              <StatChip label="Apiarios" value={apiarios.filter((a) => a !== "todos").length} />
+              <StatChip label={t("col.statTotal")} value={colmenas.length} />
+              <StatChip label={t("col.statShowing")} value={filtered.length} />
+              <StatChip label={t("col.statApiarios")} value={apiarios.filter((a) => a !== "todos").length} />
             </div>
           </header>
 
@@ -140,33 +143,33 @@ export default function ColmenasPage() {
             <div className="colmenas-card-head-row">
               <div className="toolbar">
                 <div className="input-wrap">
-                  <input className="input" type="text" placeholder="Buscar…" value={q} onChange={(e) => setQ(e.target.value)} />
+                  <input className="input" type="text" placeholder={t("col.search")} value={q} onChange={(e) => setQ(e.target.value)} />
                   <span className="kbd">/</span>
                 </div>
                 <div className="selects">
                   <label className="select">
-                    <span>Apiario</span>
+                    <span>{t("col.apiario")}</span>
                     <select value={apiario} onChange={(e) => setApiario(e.target.value)}>
-                      {apiarios.map((a) => (<option key={a} value={a}>{a === "todos" ? "Todos" : a}</option>))}
+                      {apiarios.map((a) => (<option key={a} value={a}>{a === "todos" ? t("col.all") : a}</option>))}
                     </select>
                   </label>
                   <label className="select">
-                    <span>Orden</span>
+                    <span>{t("col.order")}</span>
                     <select value={sort} onChange={(e) => setSort(e.target.value)}>
-                      <option value="nombre_asc">Nombre (A→Z)</option>
-                      <option value="nombre_desc">Nombre (Z→A)</option>
+                      <option value="nombre_asc">{t("col.nameAsc")}</option>
+                      <option value="nombre_desc">{t("col.nameDesc")}</option>
                     </select>
                   </label>
                 </div>
               </div>
-              <Link to="/colmenas/crear" className="btn-primario">➕ Crear colmena</Link>
+              <Link to="/colmenas/crear" className="btn-primario">{t("col.create")}</Link>
             </div>
           </section>
 
           <section className="colmenas-card-lista">
             {errorDelete && (
               <div className="empty-box error" style={{ marginBottom: 12 }}>
-                <h3>⚠️ Error</h3><p>{errorDelete}</p>
+                <h3>{t("col.error")}</h3><p>{errorDelete}</p>
               </div>
             )}
 
@@ -176,11 +179,11 @@ export default function ColmenasPage() {
               </div>
             ) : fail ? (
               <div className="empty-box error">
-                <h3>😕 Error de conexión</h3>
-                <p>No se pudo conectar a la base de datos local en {API_BASE_URL}/colmenas</p>
+                <h3>{t("col.connErrorTitle")}</h3>
+                <p>{t("col.connErrorText", { url: `${API_BASE_URL}/colmenas` })}</p>
               </div>
             ) : filtered.length === 0 ? (
-              <div className="empty-box"><h3>Sin resultados</h3><p>Intenta con otros filtros.</p></div>
+              <div className="empty-box"><h3>{t("col.emptyTitle")}</h3><p>{t("col.emptyText")}</p></div>
             ) : (
               <div className="grid-colmenas">
                 {filtered.map((colmena) => (
@@ -189,12 +192,12 @@ export default function ColmenasPage() {
                       <h3 className="colmena-nombre">{colmena.nombre}</h3>
                       <span className="badge-apiario">📍 {colmena.nombre_apiario || "—"}</span>
                     </div>
-                    <p className="colmena-desc">{colmena.descripcion_especifica || "Sin descripción"}</p>
+                    <p className="colmena-desc">{colmena.descripcion_especifica || t("col.noDescription")}</p>
                     <div className="card-foot">
-                      <Link to={`/colmena/${colmena.id}`} className="pill">📈 Ver detalle</Link>
-                      <Link to={`/colmenas/editar/${colmena.id}`} className="pill edit">✏️ Editar</Link>
+                      <Link to={`/colmena/${colmena.id}`} className="pill">{t("col.viewDetail")}</Link>
+                      <Link to={`/colmenas/editar/${colmena.id}`} className="pill edit">{t("col.edit")}</Link>
                       <button className="pill danger" onClick={() => handleDelete(colmena.id, colmena.nombre)} disabled={deletingId === colmena.id}>
-                        {deletingId === colmena.id ? "..." : "🗑️ Eliminar"}
+                        {deletingId === colmena.id ? "..." : t("col.delete")}
                       </button>
                     </div>
                   </div>

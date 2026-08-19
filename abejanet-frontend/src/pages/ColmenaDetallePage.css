@@ -285,13 +285,28 @@
    RESPONSIVO
    ========================================== */
 @media (max-width: 768px) {
-  .kpi-group {
-    flex-direction: column;
-  }
-  .mini-kpi-row {
-    flex-direction: column;
-  }
-  .info-grid {
-    flex-direction: column;
-  }
+  .kpi-group { flex-direction: column; }
+  .mini-kpi-row { flex-direction: column; }
+  .info-grid { flex-direction: column; }
 }
+
+/* ===== LIGHT MODE ===== */
+[data-theme="light"] .detalle-colmena-page { color: #222; }
+[data-theme="light"] .crumb-current { color: #222; }
+[data-theme="light"] .info-chip { background: #fff; border-color: #e0e0e0; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+[data-theme="light"] .chip-icon { background: rgba(255,179,0,0.1); }
+[data-theme="light"] .chip-title { color: #666; }
+[data-theme="light"] .chip-value { color: #222; }
+[data-theme="light"] .kpi-card { background: #fff; border-color: #e0e0e0; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+[data-theme="light"] .kpi-label { color: #666; }
+[data-theme="light"] .kpi-value { color: #222; }
+[data-theme="light"] .kpi-date { color: #999; }
+[data-theme="light"] .mini-kpi { background: #fff; border-color: #e0e0e0; }
+[data-theme="light"] .mini-label { color: #666; }
+[data-theme="light"] .mini-value { color: #222; }
+[data-theme="light"] .panel { background: #fff; border-color: #e0e0e0; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+[data-theme="light"] .panel-head { border-bottom-color: #eee; }
+[data-theme="light"] .panel-title { color: #222; }
+[data-theme="light"] .empty-box { background: #f9f9f6; border-color: #e0e0e0; }
+[data-theme="light"] .empty-box h4 { color: #555; }
+[data-theme="light"] .empty-box p { color: #888; }

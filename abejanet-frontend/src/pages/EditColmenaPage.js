@@ -2,12 +2,14 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import API_BASE_URL from "../api";
 import Sidebar from "./Sidebar";
+import { useLang } from "../i18n";
 import "./CreateColmenaPage.css";
-import "./Sensores.css"; 
+import "./Sensores.css";
 
 export default function EditColmenaPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { t } = useLang();
 
   // catálogo de apiarios
   const [apiarios, setApiarios] = useState([]);
@@ -93,7 +95,7 @@ export default function EditColmenaPage() {
     setSuccessMsg("");
 
     if (!isValid) {
-      setErrorMsg("Por favor completa los campos obligatorios.");
+      setErrorMsg(t("cre.errRequiredEdit"));
       return;
     }
 
@@ -120,10 +122,10 @@ export default function EditColmenaPage() {
         throw new Error(data?.error || "No se pudo guardar");
       }
 
-      setSuccessMsg("✅ Cambios guardados correctamente");
+      setSuccessMsg(t("cre.saved"));
       setTimeout(() => navigate("/colmenas"), 1000);
     } catch (err) {
-      setErrorMsg(err.message || "Error del servidor");
+      setErrorMsg(err.message || t("common.serverError"));
     } finally {
       setSaving(false);
     }
@@ -138,14 +140,14 @@ export default function EditColmenaPage() {
             <div className="create-colmena-shell">
               <header className="create-colmena-header">
                 <div>
-                  <h2>✏️ Editar colmena</h2>
-                  <p className="create-colmena-sub">Cargando información local…</p>
+                  <h2>✏️ {t("cre.editTitle")}</h2>
+                  <p className="create-colmena-sub">{t("cre.editLoading")}</p>
                 </div>
-                <Link to="/colmenas" className="crumb-link">← Volver</Link>
+                <Link to="/colmenas" className="crumb-link">← {t("common.back")}</Link>
               </header>
               <div className="create-colmena-layout">
                 <div className="create-colmena-form-card">
-                  <div className="alert"><p>Cargando datos desde la base de datos local…</p></div>
+                  <div className="alert"><p>{t("cre.editLoadingBox")}</p></div>
                 </div>
               </div>
             </div>
@@ -163,18 +165,18 @@ export default function EditColmenaPage() {
           <div className="create-colmena-shell">
             <header className="create-colmena-header">
               <div>
-                <h2>✏️ Editar colmena #{id}</h2>
+                <h2>✏️ {t("cre.editTitle")} #{id}</h2>
                 <p className="create-colmena-sub">
-                  Actualiza el nombre, apiario o notas. Los datos históricos se conservan en PostgreSQL local.
+                  {t("cre.editSub")}
                 </p>
               </div>
-              <Link to="/colmenas" className="crumb-link">← Volver a colmenas</Link>
+              <Link to="/colmenas" className="crumb-link">← {t("det.backColmenas")}</Link>
             </header>
 
             <div className="create-colmena-layout">
               <form onSubmit={handleSubmit} className="create-colmena-form-card">
                 <label className="form-field">
-                  <span>Apiario *</span>
+                  <span>{t("det.chipApiario")} *</span>
                   <select
                     name="apiario_id"
                     value={form.apiario_id}
@@ -182,7 +184,7 @@ export default function EditColmenaPage() {
                     required
                     disabled={loadingApiarios}
                   >
-                    <option value="">Selecciona un apiario…</option>
+                    <option value="">{t("cre.selectApiario")}</option>
                     {apiarios.map((a) => (
                       <option key={a.id} value={a.id}>{a.nombre}</option>
                     ))}
@@ -190,11 +192,11 @@ export default function EditColmenaPage() {
                 </label>
 
                 <label className="form-field">
-                  <span>Nombre de la colmena *</span>
+                  <span>{t("cre.name")} *</span>
                   <input
                     type="text"
                     name="nombre"
-                    placeholder="Ej. Colmena Norte 1"
+                    placeholder={t("cre.namePh")}
                     value={form.nombre}
                     onChange={handleChange}
                     required
@@ -202,11 +204,11 @@ export default function EditColmenaPage() {
                 </label>
 
                 <label className="form-field">
-                  <span>Descripción (opcional)</span>
+                  <span>{t("cre.desc")}</span>
                   <textarea
                     name="descripcion_especifica"
                     rows="4"
-                    placeholder="Detalles o notas de esta colmena..."
+                    placeholder={t("cre.descPh")}
                     value={form.descripcion_especifica}
                     onChange={handleChange}
                   />
@@ -216,18 +218,18 @@ export default function EditColmenaPage() {
                 {successMsg && <div className="alert success"><p>{successMsg}</p></div>}
 
                 <div className="form-actions" style={{ gap: 10 }}>
-                  <Link to="/colmenas" className="crumb-link" style={{ padding: "8px 12px" }}>Cancelar</Link>
+                  <Link to="/colmenas" className="crumb-link" style={{ padding: "8px 12px" }}>{t("common.cancel")}</Link>
                   <button type="submit" disabled={saving || !isValid}>
-                    {saving ? "Guardando..." : "Guardar cambios"}
+                    {saving ? `${t("cre.saving")}...` : t("cre.save")}
                   </button>
                 </div>
               </form>
 
               <aside className="create-colmena-aside">
-                <h3>🔁 Organización</h3>
-                <p>Puedes mover esta colmena de apiario sin perder sus lecturas de sensores.</p>
+                <h3>🔁 {t("cre.orgTitle")}</h3>
+                <p>{t("cre.orgText")}</p>
                 <div className="create-colmena-meta">
-                  <p>Los cambios se verán reflejados inmediatamente en el dashboard local.</p>
+                  <p>{t("cre.orgMeta")}</p>
                 </div>
               </aside>
             </div>

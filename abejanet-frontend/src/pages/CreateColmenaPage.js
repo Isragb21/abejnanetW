@@ -2,10 +2,12 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import API_BASE_URL from "../api";
 import Sidebar from "./Sidebar";
+import { useLang } from "../i18n";
 import "./CreateColmenaPage.css";
 import "./Sensores.css";
 
 export default function CreateColmenaPage() {
+  const { t } = useLang();
   const [apiarios, setApiarios] = useState([]);
   const [form, setForm] = useState({
     apiario_id: "",
@@ -39,7 +41,7 @@ export default function CreateColmenaPage() {
     setSuccessMsg("");
 
     if (!form.apiario_id || !form.nombre.trim()) {
-      setErrorMsg("Por favor llena todos los campos obligatorios.");
+      setErrorMsg(t("cre.errRequired"));
       return;
     }
 
@@ -58,10 +60,10 @@ export default function CreateColmenaPage() {
         throw new Error(data.error || "Error al crear colmena");
       }
 
-      setSuccessMsg("✅ Colmena creada correctamente");
+      setSuccessMsg(t("cre.ok"));
       setTimeout(() => navigate("/colmenas"), 1200);
     } catch (err) {
-      setErrorMsg(err.message || "Error del servidor");
+      setErrorMsg(err.message || t("common.serverError"));
     } finally {
       setLoading(false);
     }
@@ -75,27 +77,27 @@ export default function CreateColmenaPage() {
           <div className="create-colmena-shell">
             <header className="create-colmena-header">
               <div>
-                <h2>➕ Crear nueva colmena</h2>
+                <h2>➕ {t("cre.createTitle")}</h2>
                 <p className="create-colmena-sub">
-                  Registra una colmena dentro de uno de tus apiarios para comenzar a monitorearla.
+                  {t("cre.sub")}
                 </p>
               </div>
               <Link to="/colmenas" className="crumb-link">
-                ← Volver a colmenas
+                ← {t("cre.back")}
               </Link>
             </header>
 
             <div className="create-colmena-layout">
               <form onSubmit={handleSubmit} className="create-colmena-form-card">
                 <label className="form-field">
-                  <span>Apiario *</span>
+                  <span>{t("cre.apiario")} *</span>
                   <select
                     name="apiario_id"
                     value={form.apiario_id}
                     onChange={handleChange}
                     required
                   >
-                    <option value="">Selecciona un apiario…</option>
+                    <option value="">{t("cre.selectApiario")}</option>
                     {apiarios.map((a) => (
                       <option key={a.id} value={a.id}>
                         {a.nombre}
@@ -105,11 +107,11 @@ export default function CreateColmenaPage() {
                 </label>
 
                 <label className="form-field">
-                  <span>Nombre de la colmena *</span>
+                  <span>{t("cre.name")} *</span>
                   <input
                     type="text"
                     name="nombre"
-                    placeholder="Ej. Colmena Norte 1"
+                    placeholder={t("cre.namePh")}
                     value={form.nombre}
                     onChange={handleChange}
                     required
@@ -117,11 +119,11 @@ export default function CreateColmenaPage() {
                 </label>
 
                 <label className="form-field">
-                  <span>Descripción (opcional)</span>
+                  <span>{t("cre.desc")}</span>
                   <textarea
                     name="descripcion_especifica"
                     rows="4"
-                    placeholder="Detalles o notas de esta colmena..."
+                    placeholder={t("cre.descPh")}
                     value={form.descripcion_especifica}
                     onChange={handleChange}
                   />
@@ -140,21 +142,21 @@ export default function CreateColmenaPage() {
 
                 <div className="form-actions">
                   <button type="submit" disabled={loading}>
-                    {loading ? "Creando..." : "Crear colmena"}
+                    {loading ? `${t("common.creating")}...` : t("cre.create")}
                   </button>
                 </div>
               </form>
 
               <aside className="create-colmena-aside">
-                <h3>🐝 Buenas prácticas</h3>
+                <h3>🐝 {t("cre.tips")}</h3>
                 <ul>
-                  <li>Usa nombres descriptivos (ej. "Lado Este - 01").</li>
-                  <li>Anota cambios de reina o tratamientos en la descripción.</li>
-                  <li>Verifica que el apiario sea el correcto para reportes precisos.</li>
+                  <li>{t("cre.tip1")}</li>
+                  <li>{t("cre.tip2")}</li>
+                  <li>{t("cre.tip3")}</li>
                 </ul>
                 <div className="create-colmena-meta">
                   <p>
-                    Los sensores vinculados a esta colmena enviarán datos en tiempo real al panel.
+                    {t("cre.meta")}
                   </p>
                 </div>
               </aside>

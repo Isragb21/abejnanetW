@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
-import Sidebar from "./Sidebar"; 
-import API_BASE_URL from "../api"; 
-import "./ApiariosPage.css"; // Solo necesitamos este CSS ahora
+import Sidebar from "./Sidebar";
+import API_BASE_URL from "../api";
+import { useLang } from "../i18n";
+import "./ApiariosPage.css";
 
 export default function Apiarios() {
+  const { t } = useLang();
   const [apiarios, setApiarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
@@ -99,11 +101,11 @@ export default function Apiarios() {
   };
 
   const handleDelete = (id) => {
-    if (!window.confirm("¿Seguro que deseas eliminar este apiario? Las colmenas asociadas podrían verse afectadas.")) return;
+    if (!window.confirm(t("apiarios.confirmDelete"))) return;
 
     fetch(`${API_BASE_URL}/apiarios/${id}`, { method: "DELETE" })
       .then(() => cargarApiarios())
-      .catch((err) => console.error("Error al eliminar apiario:", err));
+      .catch((err) => console.error("Error:", err));
   };
 
   return (
@@ -115,30 +117,29 @@ export default function Apiarios() {
       <main className="apiarios-main">
         <header className="apiarios-header">
           <div>
-            <p className="apiarios-badge">Panel de control</p>
-            <h1>Gestión de Apiarios</h1>
-            <p className="apiarios-subtitle">Administra los apiarios, su ubicación y descripción general.</p>
+            <p className="apiarios-badge">{t("api.badge")}</p>
+            <h1>{t("api.title")}</h1>
+            <p className="apiarios-subtitle">{t("api.subtitle")}</p>
           </div>
           <div className="apiarios-header-resumen">
             <span className="apiarios-resumen-pill">
-              Total: <strong>{apiarios.length}</strong>
+              {t("common.copyTotal")} <strong>{apiarios.length}</strong>
             </span>
           </div>
         </header>
 
-        {/* Tabla principal de Apiarios */}
         <section className="apiarios-card">
           {loading ? (
-            <div className="cuenta-loading">Cargando apiarios...</div>
+            <div className="cuenta-loading">{t("api.loading")}</div>
           ) : (
             <div className="tabla-wrapper">
               <table className="tabla-apiarios">
                 <thead>
                   <tr>
-                    <th>Nombre</th>
-                    <th>Ubicación</th>
-                    <th>Descripción</th>
-                    <th>Acciones</th>
+                    <th>{t("api.thName")}</th>
+                    <th>{t("api.thLocation")}</th>
+                    <th>{t("api.thDesc")}</th>
+                    <th>{t("api.thActions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -146,8 +147,8 @@ export default function Apiarios() {
                     apiarios.map((a) => (
                       <tr key={a.id}>
                         <td style={{ fontWeight: "600" }}>{a.nombre}</td>
-                        <td>{a.direccion_o_coordenadas || "N/A"}</td>
-                        <td style={{ color: "#aaa" }}>{a.descripcion_general || "Sin descripción"}</td>
+                        <td>{a.direccion_o_coordenadas || "—"}</td>
+                        <td style={{ color: "#aaa" }}>{a.descripcion_general || t("api.noDesc")}</td>
                         <td className="tabla-apiarios-actions">
                           <button className="editar" onClick={() => handleEdit(a)}>✏️</button>
                           <button className="eliminar" onClick={() => handleDelete(a.id)}>🗑️</button>
@@ -156,7 +157,7 @@ export default function Apiarios() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="4" className="apiarios-empty">No hay apiarios registrados.</td>
+                      <td colSpan="4" className="apiarios-empty">{t("api.empty")}</td>
                     </tr>
                   )}
                 </tbody>
@@ -164,35 +165,31 @@ export default function Apiarios() {
             </div>
           )}
 
-          {/* Botón de Agregar (Abajo de la tabla) */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
             <button className="btn-primario" onClick={handleOpenCreate}>
-              ➕ Agregar Apiario
+              ➕ {t("api.add")}
             </button>
           </div>
         </section>
 
-        {/* ==========================================
-            EL MODAL (Ventana Emergente)
-            ========================================== */}
         {showModal && (
           <div className="modal-overlay">
             <div className="modal-content">
-              <h2>{editing ? "Editar Apiario" : "Nuevo Apiario"}</h2>
-              
+              <h2>{editing ? t("api.editTitle") : t("api.createTitle")}</h2>
+
               <form className="form-apiario-modal" onSubmit={handleSubmit}>
-                <label>Nombre del Apiario:</label>
-                <input type="text" name="nombre" placeholder="Ej. Apiario Principal" value={formData.nombre} onChange={handleChange} required />
+                <label>{t("api.nameLabel")}</label>
+                <input type="text" name="nombre" placeholder={t("api.namePh")} value={formData.nombre} onChange={handleChange} required />
 
-                <label>Dirección o Coordenadas:</label>
-                <input type="text" name="direccion_o_coordenadas" placeholder="Ej. 19.4326° N, 99.1332° W" value={formData.direccion_o_coordenadas} onChange={handleChange} />
+                <label>{t("api.coordLabel")}</label>
+                <input type="text" name="direccion_o_coordenadas" placeholder={t("api.coordPh")} value={formData.direccion_o_coordenadas} onChange={handleChange} />
 
-                <label>Descripción General:</label>
-                <textarea name="descripcion_general" placeholder="Detalles sobre el entorno, clima, accesos, etc." value={formData.descripcion_general} onChange={handleChange} />
+                <label>{t("api.descLabel")}</label>
+                <textarea name="descripcion_general" placeholder={t("api.descPh")} value={formData.descripcion_general} onChange={handleChange} />
 
                 <div className="modal-actions">
-                  <button type="button" className="btn-secundario" onClick={handleCloseModal}>Cancelar</button>
-                  <button type="submit" className="btn-primario">{editing ? "Guardar Cambios" : "Crear Apiario"}</button>
+                  <button type="button" className="btn-secundario" onClick={handleCloseModal}>{t("common.cancel")}</button>
+                  <button type="submit" className="btn-primario">{editing ? t("api.save") : t("api.create")}</button>
                 </div>
               </form>
             </div>

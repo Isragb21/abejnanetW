@@ -142,3 +142,20 @@
     align-items: flex-start;
   }
 }
+
+/* ===== LIGHT MODE ===== */
+[data-theme="light"] .dashboard-header h1 { color: #222; }
+[data-theme="light"] .dash-stat-chip { background: #fff; border-color: #e0e0e0; }
+[data-theme="light"] .dash-stat-label { color: #888; }
+[data-theme="light"] .dash-stat-value { color: #222; }
+[data-theme="light"] .dashboard-card {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  color: #222;
+}
+[data-theme="light"] .dashboard-card h3 { color: #b8860b; }
+[data-theme="light"] .dashboard-card p { color: #555; }
+[data-theme="light"] .dashboard-card strong { color: #222; }
+[data-theme="light"] .dashboard-list { color: #666; }
+[data-theme="light"] .dashboard-note { color: #999 !important; }
