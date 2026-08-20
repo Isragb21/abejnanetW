@@ -194,7 +194,7 @@ export default function ColmenaDetallePage() {
                 {t("det.backColmenas")}
               </Link>
               {colmena?.nombre && (
-                <h1 style={{ margin: "10px 0 0 0", color: "#fff", fontSize: "2rem" }}>
+                <h1 className="crumb-current" style={{ margin: "10px 0 0 0", fontSize: "2rem" }}>
                   {colmena.nombre}
                 </h1>
               )}
