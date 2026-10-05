@@ -35,7 +35,7 @@ const getAnswer = (text) => {
   if (lower.includes('sensor')) return 'Los **Sensores** muestran información asociada a las colmenas. Puedes consultarlos desde **Sensores** o desde el **detalle de colmena**.';
   if (lower.includes('reporte') || lower.includes('informe') || lower.includes('grafica') || lower.includes('estadistica')) return 'Ve a **Reportes** para visualizar reportes y gráficas del sistema.';
   if (lower.includes('login') || lower.includes('iniciar sesion') || lower.includes('contraseña') || lower.includes('contrasena') || lower.includes('acceso')) return 'Si no puedes iniciar sesión: verifica correo y contraseña. Si el problema persiste, contacta al administrador.';
-  if (lower.includes('cerrar sesion') || lower.includes('logout') || lower.includes('salir')) return 'Para cerrar sesión: pulsa **Cerrar sesión** en el menú lateral.';
+  if (lower.includes('cerrar sesion') || lower.includes('cerrar sesión') || lower.includes('logout') || lower.includes('salir')) return 'Para cerrar sesión: pulsa **Cerrar sesión** en el menú lateral.';
   return 'No encuentro una respuesta exacta. Prueba con una de las preguntas rápidas o escribe tu duda con palabras como: \"agregar apiario\", \"crear colmena\", \"relación apiario colmena\".';
 };
 
