@@ -19,26 +19,25 @@ const FAQ = [
 ];
 
 const getAnswer = (text) => {
+  if (!text) return '';
   let lower = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\?/g,'').replace(/¿/g,'');
-  if (lower.startsWith('como ')) lower = lower.slice(5);
-  if (lower.startsWith('como ')) lower = lower.slice(5);
-  if (lower.startsWith('cmo ')) lower = lower.slice(4);
+  lower = lower.replace(/^como /,'').replace(/^cmo /,'').replace(/^cual /,'').replace(/^donde /,'');
   if (lower.includes('agregar usuario') || lower.includes('crear usuario') || lower.includes('anadir usuario') || lower.includes('nuevo usuario')) return 'Para agregar un usuario: ve a **Usuarios** (menu lateral) → pulsa **Agregar usuario** → completa nombre, correo, contraseña y rol → guarda.';
   if (lower.includes('editar usuario') || lower.includes('modificar usuario')) return 'Para editar un usuario: ve a **Usuarios** → busca el usuario → pulsa el icono de editar → modifica los campos → guardar.';
   if (lower.includes('eliminar usuario') || lower.includes('borrar usuario')) return 'Para eliminar un usuario: ve a **Usuarios** → pulsa el icono de eliminar sobre el registro → confirma la accion.';
   if (lower.includes('agregar apiario') || lower.includes('crear apiario') || lower.includes('nuevo apiario') || lower.includes('anadir apiario')) return 'Para agregar un apiario: ve a **Apiarios** → **Nuevo apiario** → ingresa nombre, ubicacion y descripcion → guardar.';
   if (lower.includes('editar apiario') || lower.includes('modificar apiario')) return 'Para editar un apiario: ve a **Apiarios** → icono editar en el apiario deseado → actualiza los datos → guardar.';
   if (lower.includes('eliminar apiario') || lower.includes('borrar apiario')) return 'Para eliminar un apiario: ve a **Apiarios** → icono eliminar → confirma.';
-  if (lower.includes('relacion') && lower.includes('apiario') && lower.includes('colmena')) return '**Relacion Apiario–Colmena:** Un **Apiario** puede tener **varias Colmenas**. Cada **Colmena** pertenece a un **Apiario** especifico. Es decir, relacion **1:N** (uno a muchos).';
+  if (lower.includes('relacion apiario colmena') || (lower.includes('relacion') && lower.includes('apiario') && lower.includes('colmena'))) return '**Relacion Apiario–Colmena:** Un **Apiario** puede tener **varias Colmenas**. Cada **Colmena** pertenece a un **Apiario** especifico. Es decir, relacion **1:N** (uno a muchos).';
   if (lower.includes('agregar colmena') || lower.includes('crear colmena') || lower.includes('anadir colmena') || lower.includes('nueva colmena')) return 'Para agregar una colmena a un apiario: ve a **Apiarios** → abre las **Colmenas** de ese apiario (o desde **Colmenas** filtrando por apiario) → **Crear colmena** → completa los datos → guardar. La colmena quedara vinculada a ese apiario.';
   if (lower.includes('ver colmenas apiario') || lower.includes('colmenas por apiario')) return 'Para ver colmenas de un apiario: ve a **Apiarios** → selecciona el apiario → ver listado de colmenas, o ve a **Colmenas** y filtra por el apiario correspondiente.';
   if (lower.includes('editar colmena') || lower.includes('modificar colmena')) return 'Para editar una colmena: ve a **Colmenas** (del apiario) → icono editar → modifica campos → guardar.';
   if (lower.includes('eliminar colmena') || lower.includes('borrar colmena')) return 'Para eliminar una colmena: ve a **Colmenas** → icono eliminar → confirma.';
-  if (lower.includes('detalle colmena') || lower.includes('ver detalle')) return 'Para ver detalle de una colmena: ve a **Colmenas** → icono/ver detalle → se muestra info de la colmena, historial y **sensores** asociados.';
+  if (lower.includes('detalle colmena') || lower.includes('ver detalle colmena')) return 'Para ver detalle de una colmena: ve a **Colmenas** → icono/ver detalle → se muestra info de la colmena, historial y **sensores** asociados.';
   if (lower.includes('sensor')) return 'Los **Sensores** muestran informacion asociada a las colmenas. Puedes consultarlos desde **Sensores** o desde el **detalle de colmena**.';
-  if (lower.includes('reporte') || lower.includes('informe') || lower.includes('grafica') || lower.includes('estadistica')) return 'Ve a **Reportes** para visualizar reportes y graficas del sistema.';
+  if (lower.includes('reporte')) return 'Ve a **Reportes** para visualizar reportes y graficas del sistema.';
   if (lower.includes('login') || lower.includes('iniciar sesion') || lower.includes('contrasena') || lower.includes('acceso')) return 'Si no puedes iniciar sesion: verifica correo y contraseña. Si el problema persiste, contacta al administrador.';
-  if (lower.includes('cerrar sesion') || lower.includes('cerrar sesion') || lower.includes('logout') || lower.includes('salir')) return 'Para cerrar sesion: pulsa **Cerrar sesion** en el menu lateral.';
+  if (lower.includes('cerrar sesion') || lower.includes('logout') || lower.includes('salir')) return 'Para cerrar sesion: pulsa **Cerrar sesion** en el menu lateral.';
   return 'No encuentro una respuesta exacta. Prueba con una de las preguntas rápidas o escribe tu duda (ej.: "agregar usuario", "crear apiario", "agregar colmena", "relacion apiario colmena", "sensores", "reportes").';
 };
 
