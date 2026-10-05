@@ -32,7 +32,7 @@
   position: absolute;
   bottom: 70px;
   right: 0;
-  width: 340px;
+  width: min(360px, calc(100vw - 32px));
   max-height: 520px;
   display: flex;
   flex-direction: column;
@@ -113,6 +113,7 @@
   font-size: 13px;
   line-height: 1.4;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
   word-break: break-word;
 }
 
@@ -135,7 +136,7 @@
   padding: 8px 10px;
   border-top: 1px solid #e5e7eb;
   background: #fafafa;
-  max-height: 110px;
+  max-height: 132px;
   overflow-y: auto;
 }
 
@@ -153,6 +154,14 @@
 
 .quick-btn:hover {
   background: #fef3c7;
+}
+
+.quick-btn:focus-visible,
+.send-btn:focus-visible,
+.help-close:focus-visible,
+.help-toggle:focus-visible {
+  outline: 2px solid #92400e;
+  outline-offset: 2px;
 }
 
 .help-input {
@@ -231,4 +240,17 @@
   background: #1f2937;
   color: #f9fafb;
   border: 1px solid #4b5563;
+}
+
+@media (max-width: 480px) {
+  .floating-help {
+    right: 12px;
+    bottom: 12px;
+  }
+
+  .help-panel {
+    right: -4px;
+    bottom: 66px;
+    max-height: min(520px, calc(100vh - 92px));
+  }
 }
