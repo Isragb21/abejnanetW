@@ -2,7 +2,6 @@
 import { FaQuestionCircle, FaTimes, FaPaperPlane, FaComments } from 'react-icons/fa';
 import './FloatingHelp.css';
 import { ThemeContext } from '../ThemeContext';
-import { useTranslation } from 'react-i18next';
 
 const FAQ = [
   { id: 1, question: '¿Cómo agregar un usuario?', keywords: ['agregar usuario','crear usuario','añadir usuario','nuevo usuario'] },
@@ -47,8 +46,7 @@ function FloatingHelp() {
   ]);
   const [input, setInput] = useState('');
   const messagesEndRef = useRef(null);
-  const { darkMode } = useContext(ThemeContext);
-  const { t } = useTranslation();
+  const { theme } = useContext(ThemeContext);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -73,7 +71,7 @@ function FloatingHelp() {
   const askQuick = (q) => handleSend(q);
 
   return (
-    <div className={loating-help }>
+    <div className={'floating-help ' + (theme === 'dark' ? 'dark' : 'light')}>
       {isOpen && (
         <div className='help-panel'>
           <div className='help-header'>
@@ -87,7 +85,7 @@ function FloatingHelp() {
           <div className='help-body'>
             <div className='messages'>
               {messages.map(msg => (
-                <div key={msg.id} className={msg }>
+                <div key={msg.id} className={'msg ' + msg.sender}>
                   <div className='msg-bubble'>{msg.text}</div>
                 </div>
               ))}
