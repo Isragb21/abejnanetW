@@ -4,6 +4,7 @@ describe("help assistant", () => {
   test.each([
     ["¿Cómo agrego un apiario?", "Apiarios", "nombre"],
     ["quiero crear apiarios", "Apiarios", "nombre"],
+    ["como editar o eliminar un apiario?", "Para cambiar sus datos", "bote de basura"],
     ["como se agrega una colmena al apiario", "Colmenas", "apiario"],
     ["¿Qué significa la relación entre apiario y colmenas?", "lugar", "varias colmenas"],
     ["¿Dónde veo las colmenas de un apiario?", "Colmenas", "filtro"],

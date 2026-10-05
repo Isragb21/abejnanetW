@@ -27,7 +27,7 @@ const topics = [
     id: 4,
     question: "¿Cómo edito o elimino un apiario?",
     answer: "Abre Apiarios y busca el apiario.\n\nPara cambiar sus datos, pulsa el lápiz, haz los cambios y guarda.\n\nPara quitarlo, pulsa el bote de basura y confirma.",
-    keywords: ["editar apiario", "modificar apiario", "cambiar apiario", "eliminar apiario", "borrar apiario", "quitar apiario"],
+    keywords: ["editar apiario", "editar o eliminar un apiario", "modificar apiario", "cambiar apiario", "eliminar apiario", "borrar apiario", "quitar apiario"],
     entity: "apiario",
     action: "changeOrRemove",
   },
