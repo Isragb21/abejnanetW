@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import API_BASE_URL from "../api";
 import Sidebar from "./Sidebar";
 import { useLang } from "../i18n";
+import { getPageErrorMessage } from "../utils/pageErrors";
 import "./CreateColmenaPage.css";
 import "./Sensores.css";
 
@@ -38,19 +39,20 @@ export default function EditColmenaPage() {
       const raw = await r.text();
       
       if (!ct.includes("application/json")) {
-        throw new Error(
-          `Error: El servidor en ${url} no respondió con JSON. Verifica que el backend local esté corriendo.`
-        );
+        throw new Error("La página recibió una respuesta inesperada.");
       }
       
       const data = JSON.parse(raw);
-      if (!r.ok) throw new Error(data?.error || "Error en la respuesta del servidor");
+      if (!r.ok) {
+        const error = new Error(data?.error || "No se pudieron cargar los datos.");
+        error.status = r.status;
+        throw error;
+      }
       return data;
     };
 
-    // ✅ Ahora usa la URL dinámica de localhost:4000
     Promise.all([
-      fetchJsonSafe(`${API_BASE_URL}/apiarios`).catch(() => []),
+      fetchJsonSafe(`${API_BASE_URL}/apiarios`),
       fetchJsonSafe(`${API_BASE_URL}/colmenas/${id}`),
     ])
       .then(([apiariosResp, colmena]) => {
@@ -64,7 +66,7 @@ export default function EditColmenaPage() {
       })
       .catch((err) => {
         if (!alive) return;
-        setErrorMsg(err.message || "Error al cargar datos");
+        setErrorMsg(getPageErrorMessage(err, t, "cre.errLoad"));
       })
       .finally(() => {
         if (!alive) return;
@@ -75,7 +77,7 @@ export default function EditColmenaPage() {
     return () => {
       alive = false;
     };
-  }, [id]);
+  }, [id, t]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -101,7 +103,6 @@ export default function EditColmenaPage() {
 
     try {
       setSaving(true);
-      // ✅ Ahora usa la URL dinámica de localhost:4000
       const res = await fetch(`${API_BASE_URL}/colmenas/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -119,13 +120,15 @@ export default function EditColmenaPage() {
         : { error: raw };
 
       if (!res.ok) {
-        throw new Error(data?.error || "No se pudo guardar");
+        const error = new Error(data?.error || "No se pudo guardar.");
+        error.status = res.status;
+        throw error;
       }
 
       setSuccessMsg(t("cre.saved"));
       setTimeout(() => navigate("/colmenas"), 1000);
     } catch (err) {
-      setErrorMsg(err.message || t("common.serverError"));
+      setErrorMsg(getPageErrorMessage(err, t));
     } finally {
       setSaving(false);
     }

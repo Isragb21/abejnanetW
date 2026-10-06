@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import API_BASE_URL from "../api";
 import Sidebar from "./Sidebar";
 import { useLang } from "../i18n";
+import PageNotice from "../components/PageNotice";
+import { getPageErrorMessage } from "../utils/pageErrors";
 import "./Crud_usu.css";
 import "./Sensores.css";
 
@@ -14,6 +16,8 @@ export default function Crud_usu() {
 
   const [showModal, setShowModal] = useState(false);
   const [filtroCorreo, setFiltroCorreo] = useState("");
+  const [actionError, setActionError] = useState("");
+  const [actionSuccess, setActionSuccess] = useState("");
 
   const [formData, setFormData] = useState({
     nombre: "",
@@ -26,27 +30,47 @@ export default function Crud_usu() {
   });
 
   // Ejecuta la petición GET para obtener la lista de usuarios y actualizar el estado
-  const cargarUsuarios = () => {
+  const cargarUsuarios = useCallback(() => {
     setLoading(true);
     fetch(`${API_BASE_URL}/usuarios`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          const error = new Error("No se pudieron cargar los usuarios.");
+          error.status = res.status;
+          throw error;
+        }
+        return res.json();
+      })
       .then((data) => setUsuarios(Array.isArray(data) ? data : []))
-      .catch((err) => console.error("Error al cargar usuarios:", err))
+      .catch((err) => {
+        console.error("Error al cargar usuarios:", err);
+        setActionError(getPageErrorMessage(err, t));
+      })
       .finally(() => setLoading(false));
-  };
+  }, [t]);
 
   // Ejecuta la petición GET para obtener los roles disponibles para el select del formulario
-  const cargarRoles = () => {
+  const cargarRoles = useCallback(() => {
     fetch(`${API_BASE_URL}/roles`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          const error = new Error("No se pudieron cargar los roles.");
+          error.status = res.status;
+          throw error;
+        }
+        return res.json();
+      })
       .then((data) => setRoles(Array.isArray(data) ? data : []))
-      .catch((err) => console.error("Error al cargar roles:", err));
-  };
+      .catch((err) => {
+        console.error("Error al cargar roles:", err);
+        setActionError(getPageErrorMessage(err, t));
+      });
+  }, [t]);
 
   useEffect(() => {
     cargarRoles();
     cargarUsuarios();
-  }, []);
+  }, [cargarRoles, cargarUsuarios]);
 
   // Filtra el array de usuarios en memoria basándose en el input de búsqueda
   const usuariosFiltrados = usuarios.filter((usu) => {
@@ -83,6 +107,8 @@ export default function Crud_usu() {
   // Determina el método HTTP (POST o PUT) y envía el payload a la base de datos
   const handleSubmit = (e) => {
     e.preventDefault();
+    setActionError("");
+    setActionSuccess("");
 
     const method = editing ? "PUT" : "POST";
     const url = editing
@@ -105,8 +131,9 @@ export default function Crud_usu() {
     })
       .then(async (res) => {
         if (!res.ok) {
-          const errorData = await res.json().catch(() => ({}));
-          throw new Error(errorData.error || `Error ${res.status}: Operación fallida`);
+          const error = new Error("No se pudo guardar el usuario.");
+          error.status = res.status;
+          throw error;
         }
         return res.json();
       })
@@ -114,7 +141,10 @@ export default function Crud_usu() {
         cargarUsuarios();
         handleCloseModal();
       })
-      .catch((err) => alert(err.message));
+      .catch((err) => {
+        console.error("Error al guardar usuario:", err);
+        setActionError(getPageErrorMessage(err, t));
+      });
   };
 
   // Carga los datos de la fila seleccionada en el estado del formulario para su edición
@@ -136,21 +166,39 @@ export default function Crud_usu() {
   const handleDelete = (id) => {
     if (window.confirm(t("usu.confirmDelete"))) {
       fetch(`${API_BASE_URL}/usuarios/${id}`, { method: "DELETE" })
+        .then((res) => {
+          if (!res.ok) {
+            const error = new Error("No se pudo eliminar el usuario.");
+            error.status = res.status;
+            throw error;
+          }
+        })
         .then(() => cargarUsuarios())
-        .catch((err) => console.error("Error:", err));
+        .catch((err) => {
+          console.error("Error al eliminar usuario:", err);
+          setActionError(getPageErrorMessage(err, t));
+        });
     }
   };
 
   // Ejecuta la petición PUT a la ruta específica para establecer el valor del secreto_2fa como NULL
   const handleReset2FA = (id, nombre) => {
     if (window.confirm(t("usu.confirmReset2FA", { name: nombre }))) {
+      setActionError("");
+      setActionSuccess("");
       fetch(`${API_BASE_URL}/usuarios/${id}/reset-2fa`, { method: "PUT" })
-        .then(async (res) => {
-          if (!res.ok) throw new Error(t("usu.reset2faError"));
-          const data = await res.json();
-          alert(data.message);
+        .then((res) => {
+          if (!res.ok) {
+            const error = new Error(t("usu.reset2faError"));
+            error.status = res.status;
+            throw error;
+          }
+          setActionSuccess(t("usu.reset2faSuccess"));
         })
-        .catch((err) => alert(err.message));
+        .catch((err) => {
+          console.error("Error al reiniciar la autenticación:", err);
+          setActionError(getPageErrorMessage(err, t, "usu.reset2faError"));
+        });
     }
   };
 
@@ -164,6 +212,8 @@ export default function Crud_usu() {
       <Sidebar />
 
       <main className="sensores-main">
+        {actionError && !showModal && <PageNotice>{actionError}</PageNotice>}
+        {actionSuccess && <PageNotice type="success">{actionSuccess}</PageNotice>}
         <header className="sensores-header">
           <div>
             <p className="sensores-badge">{t("usu.badge")}</p>
@@ -255,6 +305,7 @@ export default function Crud_usu() {
               <h2>{editing ? t("usu.editTitle") : t("usu.createTitle")}</h2>
 
               <form className="form-usuario-modal" onSubmit={handleSubmit}>
+                {actionError && <PageNotice>{actionError}</PageNotice>}
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <div style={{ flex: 1 }}>
                     <label>{t("usu.nameLabel")}</label>

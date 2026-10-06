@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import API_BASE_URL from "../api"; 
 import Sidebar from "./Sidebar"; // 👈 Nuestro menú mágico
 import { useLang } from "../i18n";
+import PageNotice from "../components/PageNotice";
+import { getPageErrorMessage } from "../utils/pageErrors";
 import "./Sensores.css";
 
 export default function Sensores() {
@@ -17,6 +19,7 @@ export default function Sensores() {
   const [colmenas, setColmenas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
+  const [actionError, setActionError] = useState("");
 
   // Modal
   const [showModal, setShowModal] = useState(false);
@@ -36,28 +39,48 @@ export default function Sensores() {
   });
 
   // 1. Cargar sensores (Solo lo hace una vez o al guardar)
-  const cargarSensores = () => {
+  const cargarSensores = useCallback(() => {
     setLoading(true);
     fetch(`${API_BASE_URL}/sensores`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          const error = new Error("No se pudieron cargar los sensores.");
+          error.status = res.status;
+          throw error;
+        }
+        return res.json();
+      })
       .then((data) => {
         setSensores(Array.isArray(data) ? data : []);
       })
-      .catch((err) => console.error("Error al cargar sensores:", err))
+      .catch((err) => {
+        console.error("Error al cargar sensores:", err);
+        setActionError(getPageErrorMessage(err, t));
+      })
       .finally(() => setLoading(false));
-  };
+  }, [t]);
 
-  const cargarColmenas = () => {
+  const cargarColmenas = useCallback(() => {
     fetch(`${API_BASE_URL}/colmenas`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          const error = new Error("No se pudieron cargar las colmenas.");
+          error.status = res.status;
+          throw error;
+        }
+        return res.json();
+      })
       .then((data) => setColmenas(Array.isArray(data) ? data : []))
-      .catch((err) => console.error("Error al cargar colmenas:", err));
-  };
+      .catch((err) => {
+        console.error("Error al cargar colmenas:", err);
+        setActionError(getPageErrorMessage(err, t));
+      });
+  }, [t]);
 
   useEffect(() => {
     cargarColmenas();
     cargarSensores();
-  }, []); 
+  }, [cargarColmenas, cargarSensores]);
 
   // 2. Lógica de Filtrado Local (Instantáneo)
   const sensoresFiltrados = sensores.filter((sensor) => {
@@ -102,6 +125,7 @@ export default function Sensores() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setActionError("");
     const method = editing ? "PUT" : "POST";
     const url = editing ? `${API_BASE_URL}/sensores/${editing}` : `${API_BASE_URL}/sensores`;
 
@@ -111,21 +135,38 @@ export default function Sensores() {
       body: JSON.stringify(formData),
     })
       .then(async (res) => {
-        if (!res.ok) throw new Error(t("sen.errorOp"));
+        if (!res.ok) {
+          const error = new Error(t("sen.errorOp"));
+          error.status = res.status;
+          throw error;
+        }
         return res.json();
       })
       .then(() => {
         cargarSensores();
         handleCloseModal(); 
       })
-      .catch((err) => alert(err.message));
+      .catch((err) => {
+        console.error("Error al guardar sensor:", err);
+        setActionError(getPageErrorMessage(err, t, "sen.errorOp"));
+      });
   };
 
   const handleDelete = (id) => {
     if (window.confirm(t("sen.confirmDelete"))) {
       fetch(`${API_BASE_URL}/sensores/${id}`, { method: "DELETE" })
+        .then((res) => {
+          if (!res.ok) {
+            const error = new Error(t("sen.errorOp"));
+            error.status = res.status;
+            throw error;
+          }
+        })
         .then(() => cargarSensores())
-        .catch((err) => console.error("Error al eliminar sensor:", err));
+        .catch((err) => {
+          console.error("Error al eliminar sensor:", err);
+          setActionError(getPageErrorMessage(err, t, "sen.errorOp"));
+        });
     }
   };
 
@@ -141,6 +182,7 @@ export default function Sensores() {
       <Sidebar />
 
       <main className="sensores-main">
+        {actionError && <PageNotice>{actionError}</PageNotice>}
         <header className="sensores-header">
           <div>
             <p className="sensores-badge">{t("col.badge")}</p>
@@ -222,6 +264,7 @@ export default function Sensores() {
               <h2>{editing ? t("sen.editTitle") : t("sen.createTitle")}</h2>
               
               <form className="form-sensor-modal" onSubmit={handleSubmit}>
+                {actionError && <PageNotice>{actionError}</PageNotice>}
                 <label>{t("sen.colmenaLabel")}</label>
                 <select name="colmena_id" value={formData.colmena_id} onChange={handleChange} required>
                   <option value="">{t("sen.selectColmena")}</option>

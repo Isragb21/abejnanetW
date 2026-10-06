@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 
 const dict = {
   es: {
@@ -23,6 +23,14 @@ const dict = {
     "common.delete": "Eliminar",
     "common.edit": "Editar",
     "common.serverError": "Error del servidor",
+    "common.errorGeneric": "No se pudo completar esta acción. Revisa la información e inténtalo de nuevo.",
+    "common.errorConnection": "No pudimos cargar esta información. Revisa tu conexión e inténtalo de nuevo.",
+    "common.errorTimeout": "La operación tardó demasiado. Inténtalo de nuevo en unos momentos.",
+    "common.errorAccess": "Tu sesión pudo haber terminado o no tienes permiso para hacer esto. Vuelve a entrar e inténtalo de nuevo.",
+    "common.errorNotFound": "No encontramos la información solicitada. Regresa a la lista e inténtalo de nuevo.",
+    "common.errorConflict": "Ya existe un registro con esos datos. Revísalos e inténtalo de nuevo.",
+    "common.errorService": "No pudimos completar la operación en este momento. Inténtalo de nuevo más tarde.",
+    "common.retry": "Intentar de nuevo",
     "common.search": "Buscar…",
 
     /* ===== Sidebar ===== */
@@ -38,14 +46,14 @@ const dict = {
     /* ===== Login ===== */
     "login.dirLabel": "Inicio de sesión AbejaNet",
     "login.brandSuffix": "Dashboard",
-    "login.subtitle": "Monitoreo inteligente de colmenas en local.",
+    "login.subtitle": "Monitoreo inteligente de colmenas.",
     "login.bullet1": "Tendencias de peso y ambiente.",
     "login.bullet2": "Alertas tempranas activas.",
     "login.bullet3": "Autenticación de 2 Factores.",
-    "login.pillDb": "Base de Datos PostgreSQL Local",
+    "login.pillDb": "Gestión inteligente de apiarios",
     "login.head1": "Inicia sesión",
     "login.head2": "Verificación en 2 Pasos",
-    "login.sub1": "Credenciales locales de AbejaNet",
+    "login.sub1": "Usa tus credenciales de AbejaNet",
     "login.sub2": "Protege tu cuenta con Google Authenticator",
     "login.email": "Correo electrónico",
     "login.password": "Contraseña",
@@ -60,12 +68,12 @@ const dict = {
     "login.verifying": "Verificando...",
     "login.goBack": "Volver",
     "login.errTimeout": "La solicitud tardó demasiado. Revisa tu conexión e inténtalo de nuevo.",
-    "login.errServer": "No se pudo conectar con el servidor. Verifica que el backend esté disponible.",
+    "login.errServer": "No pudimos iniciar sesión en este momento. Revisa tu conexión e inténtalo de nuevo.",
     "login.err400": "Solicitud inválida. Revisa los datos enviados.",
     "login.err401": "Correo o contraseña incorrectos.",
     "login.err403": "No tienes permisos para realizar esta acción.",
-    "login.err404": "Recurso no encontrado en el servidor.",
-    "login.err500": "Error interno del servidor. Intenta nuevamente en unos minutos.",
+    "login.err404": "No encontramos el acceso solicitado. Inténtalo de nuevo.",
+    "login.err500": "Ocurrió un problema al iniciar sesión. Inténtalo de nuevo más tarde.",
     "login.errDefault": "No fue posible iniciar sesión.",
     "login.err2fa": "No fue posible validar el código de seguridad.",
     "login.errDisabled": "Tu cuenta ha sido desactivada. Contacta al administrador.",
@@ -115,8 +123,8 @@ const dict = {
     "col.nameDesc": "Nombre (Z→A)",
     "col.create": "➕ Crear colmena",
     "col.error": "⚠️ Error",
-    "col.connErrorTitle": "😕 Error de conexión",
-    "col.connErrorText": "No se pudo conectar a la base de datos local en {url}",
+    "col.connErrorTitle": "😕 No pudimos cargar tus colmenas",
+    "col.connErrorText": "Revisa tu conexión e inténtalo de nuevo. Si el problema continúa, vuelve a intentarlo más tarde.",
     "col.emptyTitle": "Sin resultados",
     "col.emptyText": "Intenta con otros filtros.",
     "col.noDescription": "Sin descripción",
@@ -128,7 +136,7 @@ const dict = {
 
     /* ===== Sensores ===== */
     "sen.title": "Gestión de Sensores",
-    "sen.subtitle": "Administra los dispositivos instalados en tus colmenas locales.",
+    "sen.subtitle": "Administra los dispositivos instalados en tus colmenas.",
     "sen.filterHive": "-- Filtrar por Colmena --",
     "sen.searchMac": "Buscar por MAC Address...",
     "sen.loading": "Cargando sensores...",
@@ -172,8 +180,8 @@ const dict = {
     "det.rain": "Lluvia",
     "det.noLectures": "Sin lecturas disponibles.",
     "det.loading": "Cargando datos de la colmena…",
-    "det.errorTitle": "Ocurrió un problema",
-    "det.errorText": "Verifica la API local: {url}",
+    "det.errorTitle": "No pudimos cargar esta colmena",
+    "det.errorText": "Revisa tu conexión e inténtalo de nuevo. Si el problema continúa, vuelve a intentarlo más tarde.",
     "det.chartTemp": "Temperatura (°C)",
     "det.chartHum": "Humedad (%)",
     "det.chartWeight": "Peso (kg)",
@@ -182,7 +190,7 @@ const dict = {
     "reports.noSelected": "Sin seleccionar",
 
     /* ===== Cuenta ===== */
-    "cue.loading": "Cargando datos de la base de datos...",
+    "cue.loading": "Cargando los datos de tu cuenta...",
     "cue.guest": "Invitado",
     "cue.edit": "Editar perfil",
     "cue.save": "Guardar Cambios",
@@ -196,7 +204,7 @@ const dict = {
     "cue.stateLabel": "Estado de cuenta",
     "cue.registered": "Registrado el",
     "cue.savedOk": "Perfil actualizado correctamente",
-    "cue.saveError": "Error al guardar cambios en el servidor local",
+    "cue.saveError": "No pudimos guardar los cambios. Inténtalo de nuevo.",
     "cue.noId": "No se puede actualizar: falta el ID del usuario.",
 
     /* ===== Usuarios CRUD ===== */
@@ -230,6 +238,7 @@ const dict = {
     "usu.confirmDelete": "¿Seguro que deseas eliminar este usuario? No podrá volver a iniciar sesión.",
     "usu.confirmReset2fa": "¿Seguro que deseas reiniciar el acceso 2FA de {name}? En su próximo inicio de sesión se le pedirá configurar un nuevo dispositivo.",
     "usu.reset2faError": "Ocurrió un error al intentar reiniciar la autenticación de 2 pasos.",
+    "usu.reset2faSuccess": "Se reinició el acceso de seguridad. La persona deberá configurarlo al volver a entrar.",
     "usu.actionEdit": "Editar Usuario",
     "usu.actionDelete": "Eliminar Usuario",
     "usu.actionReset2fa": "Reiniciar QR de Autenticación",
@@ -252,19 +261,20 @@ const dict = {
     "cre.tip3": "Verifica que el apiario sea el correcto para reportes precisos.",
     "cre.meta": "Los sensores vinculados a esta colmena enviarán datos en tiempo real al panel.",
     "cre.errRequired": "Por favor llena todos los campos obligatorios.",
+    "cre.noApiarios": "Primero agrega un apiario para poder registrar una colmena.",
     "cre.ok": "✅ Colmena creada correctamente",
     "cre.errServer": "Error del servidor",
     "cre.editTitle": "✏️ Editar colmena",
     "cre.editTitleId": "✏️ Editar colmena #{id}",
-    "cre.editLoading": "Cargando información local…",
-    "cre.editSub": "Actualiza el nombre, apiario o notas. Los datos históricos se conservan en PostgreSQL local.",
-    "cre.editLoadingBox": "Cargando datos desde la base de datos local…",
+    "cre.editLoading": "Cargando información…",
+    "cre.editSub": "Actualiza el nombre, apiario o notas. Se conservarán las lecturas históricas.",
+    "cre.editLoadingBox": "Cargando los datos de la colmena…",
     "cre.saved": "✅ Cambios guardados correctamente",
     "cre.save": "Guardar cambios",
     "cre.saving": "Guardando...",
     "cre.orgTitle": "🔁 Organización",
     "cre.orgText": "Puedes mover esta colmena de apiario sin perder sus lecturas de sensores.",
-    "cre.orgMeta": "Los cambios se verán reflejados inmediatamente en el dashboard local.",
+    "cre.orgMeta": "Los cambios se verán reflejados inmediatamente en el panel.",
     "cre.errRequiredEdit": "Por favor completa los campos obligatorios.",
     "cre.errRaw": "Error en la respuesta del servidor",
     "cre.errLoad": "Error al cargar datos",
@@ -391,6 +401,14 @@ const dict = {
     "common.delete": "Delete",
     "common.edit": "Edit",
     "common.serverError": "Server error",
+    "common.errorGeneric": "We couldn't complete this action. Check the information and try again.",
+    "common.errorConnection": "We couldn't load this information. Check your connection and try again.",
+    "common.errorTimeout": "This took too long. Please try again in a moment.",
+    "common.errorAccess": "Your session may have ended or you may not have permission. Sign in again and retry.",
+    "common.errorNotFound": "We couldn't find the requested information. Return to the list and try again.",
+    "common.errorConflict": "A record with this information already exists. Check it and try again.",
+    "common.errorService": "We couldn't complete this action right now. Please try again later.",
+    "common.retry": "Try again",
     "common.search": "Search…",
 
     /* ===== Sidebar ===== */
@@ -406,14 +424,14 @@ const dict = {
     /* ===== Login ===== */
     "login.dirLabel": "AbejaNet login",
     "login.brandSuffix": "Dashboard",
-    "login.subtitle": "Smart monitoring of your beehives locally.",
+    "login.subtitle": "Smart monitoring of your beehives.",
     "login.bullet1": "Weight and environment trends.",
     "login.bullet2": "Early active alerts.",
     "login.bullet3": "2-Factor Authentication.",
-    "login.pillDb": "Local PostgreSQL Database",
+    "login.pillDb": "Smart apiary management",
     "login.head1": "Sign in",
     "login.head2": "2-Step Verification",
-    "login.sub1": "AbejaNet local credentials",
+    "login.sub1": "Use your AbejaNet credentials",
     "login.sub2": "Protect your account with Google Authenticator",
     "login.email": "Email",
     "login.password": "Password",
@@ -428,12 +446,12 @@ const dict = {
     "login.verifying": "Verifying...",
     "login.goBack": "Back",
     "login.errTimeout": "The request took too long. Check your connection and try again.",
-    "login.errServer": "Could not connect to the server. Make sure the backend is available.",
+    "login.errServer": "We couldn't sign you in right now. Check your connection and try again.",
     "login.err400": "Invalid request. Check the submitted data.",
     "login.err401": "Incorrect email or password.",
     "login.err403": "You do not have permission to perform this action.",
-    "login.err404": "Resource not found on the server.",
-    "login.err500": "Internal server error. Try again in a few minutes.",
+    "login.err404": "We couldn't find the requested sign-in page. Please try again.",
+    "login.err500": "Something went wrong while signing in. Please try again later.",
     "login.errDefault": "Unable to sign in.",
     "login.err2fa": "Unable to validate the security code.",
     "login.errDisabled": "Your account has been deactivated. Contact the administrator.",
@@ -483,8 +501,8 @@ const dict = {
     "col.nameDesc": "Name (Z→A)",
     "col.create": "➕ Create hive",
     "col.error": "⚠️ Error",
-    "col.connErrorTitle": "😕 Connection error",
-    "col.connErrorText": "Could not connect to the local database at {url}",
+    "col.connErrorTitle": "😕 We couldn't load your hives",
+    "col.connErrorText": "Check your connection and try again. If the problem continues, please try again later.",
     "col.emptyTitle": "No results",
     "col.emptyText": "Try other filters.",
     "col.noDescription": "No description",
@@ -496,7 +514,7 @@ const dict = {
 
     /* ===== Sensores ===== */
     "sen.title": "Sensor Management",
-    "sen.subtitle": "Manage the devices installed in your local hives.",
+    "sen.subtitle": "Manage the devices installed in your hives.",
     "sen.filterHive": "-- Filter by Hive --",
     "sen.searchMac": "Search by MAC Address...",
     "sen.loading": "Loading sensors...",
@@ -540,8 +558,8 @@ const dict = {
     "det.rain": "Rain",
     "det.noLectures": "No readings available.",
     "det.loading": "Loading hive data…",
-    "det.errorTitle": "Something went wrong",
-    "det.errorText": "Check the local API: {url}",
+    "det.errorTitle": "We couldn't load this hive",
+    "det.errorText": "Check your connection and try again. If the problem continues, please try again later.",
     "det.chartTemp": "Temperature (°C)",
     "det.chartHum": "Humidity (%)",
     "det.chartWeight": "Weight (kg)",
@@ -550,7 +568,7 @@ const dict = {
     "reports.noSelected": "Not selected",
 
     /* ===== Cuenta ===== */
-    "cue.loading": "Loading data from the database...",
+    "cue.loading": "Loading your account information...",
     "cue.guest": "Guest",
     "cue.edit": "Edit profile",
     "cue.save": "Save Changes",
@@ -564,7 +582,7 @@ const dict = {
     "cue.stateLabel": "Account status",
     "cue.registered": "Registered on",
     "cue.savedOk": "Profile updated successfully",
-    "cue.saveError": "Error saving changes on the local server",
+    "cue.saveError": "We couldn't save your changes. Please try again.",
     "cue.noId": "Cannot update: missing user ID.",
 
     /* ===== Usuarios CRUD ===== */
@@ -598,6 +616,7 @@ const dict = {
     "usu.confirmDelete": "Are you sure you want to delete this user? They will no longer be able to sign in.",
     "usu.confirmReset2fa": "Are you sure you want to reset the 2FA access of {name}? On their next login they will be asked to configure a new device.",
     "usu.reset2faError": "An error occurred while trying to reset the 2-step authentication.",
+    "usu.reset2faSuccess": "Security access was reset. The user will set it up again at their next sign-in.",
     "usu.actionEdit": "Edit User",
     "usu.actionDelete": "Delete User",
     "usu.actionReset2fa": "Reset Authentication QR",
@@ -620,19 +639,20 @@ const dict = {
     "cre.tip3": "Verify the apiary is correct for accurate reports.",
     "cre.meta": "Sensors linked to this hive will send real-time data to the dashboard.",
     "cre.errRequired": "Please fill in all required fields.",
+    "cre.noApiarios": "Add an apiary first so you can register a hive.",
     "cre.ok": "✅ Hive created successfully",
     "cre.errServer": "Server error",
     "cre.editTitle": "✏️ Edit hive",
     "cre.editTitleId": "✏️ Edit hive #{id}",
-    "cre.editLoading": "Loading local information…",
-    "cre.editSub": "Update the name, apiary or notes. Historical data is kept in local PostgreSQL.",
-    "cre.editLoadingBox": "Loading data from the local database…",
+    "cre.editLoading": "Loading information…",
+    "cre.editSub": "Update the name, apiary or notes. Historical readings will be preserved.",
+    "cre.editLoadingBox": "Loading hive information…",
     "cre.saved": "✅ Changes saved successfully",
     "cre.save": "Save changes",
     "cre.saving": "Saving...",
     "cre.orgTitle": "🔁 Organization",
     "cre.orgText": "You can move this hive to another apiary without losing its sensor readings.",
-    "cre.orgMeta": "Changes will be reflected immediately on the local dashboard.",
+    "cre.orgMeta": "Changes will appear on the dashboard right away.",
     "cre.errRequiredEdit": "Please complete the required fields.",
     "cre.errRaw": "Error in server response",
     "cre.errLoad": "Error loading data",
@@ -757,7 +777,7 @@ export function LanguageProvider({ children }) {
   }, [lang]);
 
   const locale = lang === "es" ? "es-MX" : "en-US";
-  const t = (key, vars) => {
+  const t = useCallback((key, vars) => {
     let str = dict[lang]?.[key] ?? dict.es[key] ?? key;
     if (vars) {
       Object.entries(vars).forEach(([k, v]) => {
@@ -765,7 +785,7 @@ export function LanguageProvider({ children }) {
       });
     }
     return str;
-  };
+  }, [lang]);
 
   return (
     <LanguageContext.Provider value={{ lang, setLang, t, locale }}>

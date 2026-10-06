@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import API_BASE_URL from "../api"; 
 import Sidebar from "./Sidebar"; // 👈 Importamos nuestro menú mágico
 import { useLang } from "../i18n";
+import { getPageErrorMessage } from "../utils/pageErrors";
 import "./Sensores.css"; // 👈 Para heredar el layout oscuro
 import "./ColmenasPage.css"; // Solo para estilos específicos de las tarjetas
 
@@ -35,6 +36,7 @@ export default function ColmenasPage() {
   const [colmenas, setColmenas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fail, setFail] = useState(false);
+  const [reloadCount, setReloadCount] = useState(0);
 
   const [deletingId, setDeletingId] = useState(null);
   const [errorDelete, setErrorDelete] = useState("");
@@ -58,7 +60,7 @@ export default function ColmenasPage() {
       }
     };
     cargarColmenas();
-  }, []);
+  }, [reloadCount]);
 
   const apiarios = useMemo(() => {
     const set = new Set();
@@ -112,7 +114,7 @@ export default function ColmenasPage() {
       if (res.status !== 200) throw new Error(t("col.deleteFail"));
     } catch (e) {
       setColmenas(prev);
-      setErrorDelete(e?.response?.data?.error || e.message || t("col.deleteFail"));
+      setErrorDelete(getPageErrorMessage(e, t, "col.deleteFail"));
     } finally {
       setDeletingId(null);
     }
@@ -180,7 +182,10 @@ export default function ColmenasPage() {
             ) : fail ? (
               <div className="empty-box error">
                 <h3>{t("col.connErrorTitle")}</h3>
-                <p>{t("col.connErrorText", { url: `${API_BASE_URL}/colmenas` })}</p>
+                <p>{t("col.connErrorText")}</p>
+                <button className="pill" onClick={() => setReloadCount((count) => count + 1)}>
+                  {t("common.retry")}
+                </button>
               </div>
             ) : filtered.length === 0 ? (
               <div className="empty-box"><h3>{t("col.emptyTitle")}</h3><p>{t("col.emptyText")}</p></div>

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import API_BASE_URL from "../api";
 import Sidebar from "./Sidebar"; 
 import { useLang } from "../i18n";
+import PageNotice from "../components/PageNotice";
+import { getPageErrorMessage } from "../utils/pageErrors";
 import "./Sensores.css"; 
 import "./Cuenta.css"; 
 
@@ -10,6 +12,8 @@ export default function Cuenta() {
   const [usuario, setUsuario] = useState(null);
   const [editando, setEditando] = useState(false);
   const [formData, setFormData] = useState({});
+  const [pageError, setPageError] = useState("");
+  const [savedMessage, setSavedMessage] = useState("");
 
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("usuario") || "{}");
@@ -21,7 +25,11 @@ export default function Cuenta() {
     if (correoBuscado) {
       fetch(`${API_BASE_URL}/usuarios/${correoBuscado}`)
         .then(async (res) => {
-          if (!res.ok) throw new Error("No se encontró el usuario en la BD");
+          if (!res.ok) {
+            const error = new Error("No se pudo cargar la cuenta.");
+            error.status = res.status;
+            throw error;
+          }
           return res.json();
         })
         .then((data) => {
@@ -33,6 +41,7 @@ export default function Cuenta() {
         })
         .catch((err) => {
           console.warn("Usando datos locales:", err.message);
+          setPageError(getPageErrorMessage(err, t));
           // Si falla la conexión, usamos el caché pero evitamos que diga "Inactivo" por error
           setUsuario({ ...userData, correo_electronico: correoBuscado, esta_activo: true });
           setFormData({ ...userData, correo_electronico: correoBuscado });
@@ -41,14 +50,16 @@ export default function Cuenta() {
       setUsuario({ nombre: t("cue.guest"), correo_electronico: "—", esta_activo: true });
       setFormData({ nombre: t("cue.guest"), correo_electronico: "—" });
     }
-  }, []);
+  }, [t]);
 
   const handleChange = (e) =>
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
   const guardarCambios = () => {
+    setPageError("");
+    setSavedMessage("");
     if (!usuario?.id) {
-      alert(t("cue.noId"));
+      setPageError(t("cue.noId"));
       return;
     }
 
@@ -58,7 +69,11 @@ export default function Cuenta() {
       body: JSON.stringify(formData),
     })
       .then((res) => {
-        if (!res.ok) throw new Error("Error al actualizar");
+        if (!res.ok) {
+          const error = new Error("No se pudieron guardar los cambios.");
+          error.status = res.status;
+          throw error;
+        }
         return res.json();
       })
       .then((data) => {
@@ -69,11 +84,11 @@ export default function Cuenta() {
           ...data,
           correo: data.correo_electronico
         }));
-        alert(t("cue.savedOk"));
+        setSavedMessage(t("cue.savedOk"));
       })
       .catch((err) => {
         console.error("Error:", err);
-        alert(t("cue.saveError"));
+        setPageError(getPageErrorMessage(err, t, "cue.saveError"));
       });
   };
 
@@ -100,6 +115,8 @@ export default function Cuenta() {
       <main className="sensores-main" style={{ justifyContent: 'center', alignItems: 'center', padding: '20px' }}>
         
         <div className="cuenta-card">
+          {pageError && <PageNotice>{pageError}</PageNotice>}
+          {savedMessage && <PageNotice type="success">{savedMessage}</PageNotice>}
           <div className="cuenta-avatar">
             {usuario.nombre?.charAt(0).toUpperCase() || "U"}
           </div>

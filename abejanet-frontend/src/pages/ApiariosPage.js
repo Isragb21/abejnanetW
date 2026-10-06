@@ -1,13 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Sidebar from "./Sidebar";
 import API_BASE_URL from "../api";
 import { useLang } from "../i18n";
+import PageNotice from "../components/PageNotice";
+import { getPageErrorMessage } from "../utils/pageErrors";
 import "./ApiariosPage.css";
 
 export default function Apiarios() {
   const { t } = useLang();
   const [apiarios, setApiarios] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [pageError, setPageError] = useState("");
   const [editing, setEditing] = useState(null);
 
   // Estado para controlar la ventana emergente (Modal)
@@ -22,20 +25,30 @@ export default function Apiarios() {
   /* ============================
          CARGAR APIARIOS
   ============================ */
-  const cargarApiarios = () => {
+  const cargarApiarios = useCallback(() => {
     setLoading(true);
     fetch(`${API_BASE_URL}/apiarios`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          const error = new Error("No se pudieron cargar los apiarios.");
+          error.status = res.status;
+          throw error;
+        }
+        return res.json();
+      })
       .then((data) => {
         if (Array.isArray(data)) setApiarios(data);
       })
-      .catch((err) => console.error("Error al cargar apiarios:", err))
+      .catch((err) => {
+        console.error("Error al cargar apiarios:", err);
+        setPageError(getPageErrorMessage(err, t));
+      })
       .finally(() => setLoading(false));
-  };
+  }, [t]);
 
   useEffect(() => {
     cargarApiarios();
-  }, []);
+  }, [cargarApiarios]);
 
   /* ============================
          FORMULARIO HANDLERS
@@ -70,6 +83,7 @@ export default function Apiarios() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setPageError("");
     const method = editing ? "PUT" : "POST";
     const url = editing
       ? `${API_BASE_URL}/apiarios/${editing}`
@@ -88,8 +102,9 @@ export default function Apiarios() {
     })
       .then(async (res) => {
         if (!res.ok) {
-          const error = await res.json().catch(() => ({}));
-          throw new Error(error.error || "Error al guardar el apiario.");
+          const error = new Error("No se pudo guardar el apiario.");
+          error.status = res.status;
+          throw error;
         }
         return res.json();
       })
@@ -97,15 +112,29 @@ export default function Apiarios() {
         cargarApiarios();
         handleCloseModal(); // Cerramos el modal al guardar
       })
-      .catch((err) => alert(err.message));
+      .catch((err) => {
+        console.error("Error al guardar apiario:", err);
+        setPageError(getPageErrorMessage(err, t));
+      });
   };
 
   const handleDelete = (id) => {
     if (!window.confirm(t("apiarios.confirmDelete"))) return;
 
+    setPageError("");
     fetch(`${API_BASE_URL}/apiarios/${id}`, { method: "DELETE" })
+      .then((res) => {
+        if (!res.ok) {
+          const error = new Error("No se pudo eliminar el apiario.");
+          error.status = res.status;
+          throw error;
+        }
+      })
       .then(() => cargarApiarios())
-      .catch((err) => console.error("Error:", err));
+      .catch((err) => {
+        console.error("Error al eliminar apiario:", err);
+        setPageError(getPageErrorMessage(err, t));
+      });
   };
 
   return (
@@ -127,6 +156,8 @@ export default function Apiarios() {
             </span>
           </div>
         </header>
+
+        {pageError && !showModal && <PageNotice>{pageError}</PageNotice>}
 
         <section className="apiarios-card">
           {loading ? (
@@ -178,6 +209,7 @@ export default function Apiarios() {
               <h2>{editing ? t("api.editTitle") : t("api.createTitle")}</h2>
 
               <form className="form-apiario-modal" onSubmit={handleSubmit}>
+                {pageError && <PageNotice>{pageError}</PageNotice>}
                 <label>{t("api.nameLabel")}</label>
                 <input type="text" name="nombre" placeholder={t("api.namePh")} value={formData.nombre} onChange={handleChange} required />
 

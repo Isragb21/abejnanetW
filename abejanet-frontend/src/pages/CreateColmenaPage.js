@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import API_BASE_URL from "../api";
 import Sidebar from "./Sidebar";
 import { useLang } from "../i18n";
+import { getPageErrorMessage } from "../utils/pageErrors";
 import "./CreateColmenaPage.css";
 import "./Sensores.css";
 
@@ -15,18 +16,33 @@ export default function CreateColmenaPage() {
     descripcion_especifica: "",
   });
   const [loading, setLoading] = useState(false);
+  const [apiariosLoaded, setApiariosLoaded] = useState(false);
+  const [loadingApiariosError, setLoadingApiariosError] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const navigate = useNavigate();
 
-  // Cargar apiarios al iniciar
   useEffect(() => {
-    // ✅ Ahora usa la URL dinámica de localhost:4000
-    fetch(`${API_BASE_URL}/apiarios`)
-      .then((r) => r.json())
-      .then((data) => setApiarios(data || []))
-      .catch(() => setApiarios([]));
-  }, []);
+    const cargarApiarios = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/apiarios`);
+        if (!response.ok) {
+          const error = new Error("No se pudieron cargar los apiarios.");
+          error.status = response.status;
+          throw error;
+        }
+        const data = await response.json();
+        setApiarios(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Error al cargar apiarios:", error);
+        setLoadingApiariosError(getPageErrorMessage(error, t));
+      } finally {
+        setApiariosLoaded(true);
+      }
+    };
+
+    cargarApiarios();
+  }, [t]);
 
   // Manejar cambios en los campos
   const handleChange = (e) => {
@@ -47,23 +63,24 @@ export default function CreateColmenaPage() {
 
     try {
       setLoading(true);
-      // ✅ Ahora usa la URL dinámica de localhost:4000
       const res = await fetch(`${API_BASE_URL}/colmenas`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        throw new Error(data.error || "Error al crear colmena");
+        const error = new Error(data.error || "No se pudo crear la colmena.");
+        error.status = res.status;
+        throw error;
       }
 
       setSuccessMsg(t("cre.ok"));
       setTimeout(() => navigate("/colmenas"), 1200);
     } catch (err) {
-      setErrorMsg(err.message || t("common.serverError"));
+      setErrorMsg(getPageErrorMessage(err, t));
     } finally {
       setLoading(false);
     }
@@ -89,6 +106,16 @@ export default function CreateColmenaPage() {
 
             <div className="create-colmena-layout">
               <form onSubmit={handleSubmit} className="create-colmena-form-card">
+                {loadingApiariosError && (
+                  <div className="alert error" role="alert">
+                    <p>{loadingApiariosError}</p>
+                  </div>
+                )}
+                {apiariosLoaded && !loadingApiariosError && apiarios.length === 0 && (
+                  <div className="alert error" role="status">
+                    <p>{t("cre.noApiarios")}</p>
+                  </div>
+                )}
                 <label className="form-field">
                   <span>{t("cre.apiario")} *</span>
                   <select
@@ -141,7 +168,7 @@ export default function CreateColmenaPage() {
                 )}
 
                 <div className="form-actions">
-                  <button type="submit" disabled={loading}>
+                  <button type="submit" disabled={loading || Boolean(loadingApiariosError) || apiarios.length === 0}>
                     {loading ? `${t("common.creating")}...` : t("cre.create")}
                   </button>
                 </div>

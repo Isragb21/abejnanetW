@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import API_BASE_URL from "../api"; 
 import Sidebar from "./Sidebar"; // 👈 Nuestro menú global
 import { useLang } from "../i18n";
+import PageNotice from "../components/PageNotice";
+import { getPageErrorMessage } from "../utils/pageErrors";
 import "./Sensores.css"; // 👈 Para heredar el fondo oscuro
 import "./DashboardPage.css";
 
@@ -18,24 +20,33 @@ function StatChip({ label, value }) {
 export default function DashboardPage() {
   const { t } = useLang();
 
-  // Estado para los datos reales del backend
   const [kpis, setKpis] = useState({
-    colmenasTotales: 0,
-    apiarios: 0,
-    sensoresActivos: 0,
-    alertasHoy: 0,
+    colmenasTotales: null,
+    apiarios: null,
+    sensoresActivos: null,
+    alertasHoy: null,
   });
+  const [pageError, setPageError] = useState("");
+  const [reloadCount, setReloadCount] = useState(0);
 
-  // Extraemos solo el nombre para dar la bienvenida
   const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
   const nombre = usuario?.nombre || t("dash.fallbackName");
 
-  // 📈 Cargar estadísticas reales desde el backend local
   useEffect(() => {
+    setPageError("");
+    const loadJson = (url) => fetch(url).then((res) => {
+      if (!res.ok) {
+        const error = new Error("No se pudieron cargar los datos del panel.");
+        error.status = res.status;
+        throw error;
+      }
+      return res.json();
+    });
+
     Promise.all([
-      fetch(`${API_BASE_URL}/colmenas`).then(res => res.json()),
-      fetch(`${API_BASE_URL}/apiarios`).then(res => res.json()),
-      fetch(`${API_BASE_URL}/sensores`).then(res => res.json()),
+      loadJson(`${API_BASE_URL}/colmenas`),
+      loadJson(`${API_BASE_URL}/apiarios`),
+      loadJson(`${API_BASE_URL}/sensores`),
     ])
       .then(([colmenas, apiarios, sensores]) => {
         setKpis({
@@ -45,8 +56,11 @@ export default function DashboardPage() {
           alertasHoy: 0, // Listo para implementarse en el futuro
         });
       })
-      .catch(err => console.error("Error cargando estadísticas del dashboard:", err));
-  }, []);
+      .catch((err) => {
+        console.error("Error cargando estadísticas del panel:", err);
+        setPageError(getPageErrorMessage(err, t));
+      });
+  }, [reloadCount, t]);
 
   return (
     <div className="sensores-layout">
@@ -56,6 +70,11 @@ export default function DashboardPage() {
 
       {/* ==== CONTENIDO PRINCIPAL ==== */}
       <main className="sensores-main">
+        {pageError && (
+          <PageNotice onRetry={() => setReloadCount((count) => count + 1)} retryLabel={t("common.retry")}>
+            {pageError}
+          </PageNotice>
+        )}
         
         <header className="dashboard-header">
           <div>

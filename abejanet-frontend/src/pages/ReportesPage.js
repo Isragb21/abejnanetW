@@ -7,6 +7,8 @@ import jsPDF from "jspdf";
 import API_BASE_URL from "../api";
 import Sidebar from "./Sidebar";
 import { useLang } from "../i18n";
+import PageNotice from "../components/PageNotice";
+import { getPageErrorMessage } from "../utils/pageErrors";
 import "./Sensores.css";
 import "./ReportesPage.css";
 
@@ -55,25 +57,57 @@ export default function ReportesPage() {
   const [fechaHasta, setFechaHasta] = useState("");
   const [loading, setLoading] = useState(false);
   const [generatingPdf, setGeneratingPdf] = useState(false);
+  const [pdfError, setPdfError] = useState("");
+  const [pageError, setPageError] = useState("");
+  const [reloadCount, setReloadCount] = useState(0);
   const reportRef = useRef(null);
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/colmenas`).then(r => r.json()).then(setColmenas);
-  }, []);
+    setPageError("");
+    fetch(`${API_BASE_URL}/colmenas`)
+      .then((res) => {
+        if (!res.ok) {
+          const error = new Error("No se pudieron cargar las colmenas.");
+          error.status = res.status;
+          throw error;
+        }
+        return res.json();
+      })
+      .then((data) => setColmenas(Array.isArray(data) ? data : []))
+      .catch((error) => {
+        console.error("Error al cargar colmenas para reportes:", error);
+        setPageError(getPageErrorMessage(error, t));
+      });
+  }, [reloadCount, t]);
 
   useEffect(() => {
     if (selectedColmena) {
+      setPageError("");
       setLoading(true);
       fetch(`${API_BASE_URL}/lecturas?colmena_id=${selectedColmena}`)
-        .then(r => r.json())
-        .then(data => {
+        .then((res) => {
+          if (!res.ok) {
+            const error = new Error("No se pudieron cargar las lecturas.");
+            error.status = res.status;
+            throw error;
+          }
+          return res.json();
+        })
+        .then((data) => {
           const ordenadas = Array.isArray(data) ? data.sort((a, b) => new Date(a.fecha_registro) - new Date(b.fecha_registro)) : [];
           setLecturas(ordenadas);
-          setLoading(false);
         })
-        .catch(() => { setLecturas([]); setLoading(false); });
+        .catch((error) => {
+          console.error("Error al cargar lecturas del reporte:", error);
+          setLecturas([]);
+          setPageError(getPageErrorMessage(error, t));
+        })
+        .finally(() => setLoading(false));
+    } else {
+      setLecturas([]);
+      setLoading(false);
     }
-  }, [selectedColmena]);
+  }, [selectedColmena, reloadCount, t]);
 
   const lecturasFiltradas = useMemo(() => {
     if (!rangoActivo && !fechaDesde && !fechaHasta) return lecturasRaw;
@@ -117,6 +151,7 @@ export default function ReportesPage() {
 
   const handleDescargarPDF = async () => {
     if (!reportRef.current) return;
+    setPdfError("");
     setGeneratingPdf(true);
 
     try {
@@ -308,8 +343,8 @@ export default function ReportesPage() {
 
       doc.save(`Reporte_${nombreColmena.replace(/\s+/g, "_")}.pdf`);
     } catch (err) {
-      console.error(err);
-      alert("Error al generar PDF");
+      console.error("Error al generar el reporte:", err);
+      setPdfError(getPageErrorMessage(err, t, "rep.pdfError"));
     } finally {
       setGeneratingPdf(false);
     }
@@ -319,6 +354,12 @@ export default function ReportesPage() {
     <div className="sensores-layout">
       <Sidebar />
       <main className="sensores-main">
+        {pageError && (
+          <PageNotice onRetry={() => setReloadCount((count) => count + 1)} retryLabel={t("common.retry")}>
+            {pageError}
+          </PageNotice>
+        )}
+        {pdfError && <PageNotice>{pdfError}</PageNotice>}
         <header className="sensores-header">
           <div>
             <p className="sensores-badge">{t("rep.badge")}</p>

@@ -46,15 +46,13 @@ function LoginPage() {
     }
 
     const status = err.response.status;
-    const backendMessage = err.response?.data?.error || err.response?.data?.mensaje;
-
-    if (status === 400) return backendMessage || t("login.err400");
-    if (status === 401) return backendMessage || t("login.err401");
-    if (status === 403) return backendMessage || t("login.err403");
-    if (status === 404) return backendMessage || t("login.err404");
+    if (status === 400) return t("login.err400");
+    if (status === 401) return t("login.err401");
+    if (status === 403) return t("login.err403");
+    if (status === 404) return t("login.err404");
     if (status >= 500) return t("login.err500");
 
-    return backendMessage || t(fallbackKey);
+    return t(fallbackKey);
   };
 
   // ===============================================

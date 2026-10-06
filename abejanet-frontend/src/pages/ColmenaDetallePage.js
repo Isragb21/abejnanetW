@@ -1,10 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useParams, Link } from "react-router-dom";
 import API_BASE_URL from "../api";
 import Sidebar from "./Sidebar";
 import { useLang } from "../i18n";
 import { useTheme } from "../ThemeContext";
+import { getPageErrorMessage } from "../utils/pageErrors";
 
 import {
   LineChart,
@@ -129,6 +130,7 @@ export default function ColmenaDetallePage() {
   const [ultimaFecha, setUltimaFecha] = useState(null);
   const [fail, setFail] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [reloadCount, setReloadCount] = useState(0);
 
   useEffect(() => {
     setLoading(true);
@@ -166,20 +168,20 @@ export default function ColmenaDetallePage() {
       })
       .catch((err) => {
         console.error("Error cargando detalles de colmena:", err);
-        setFail(true);
+        setFail(getPageErrorMessage(err, t, "det.errorText"));
       })
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, reloadCount, t]);
 
-  const formatFecha = (ms) =>
+  const formatFecha = useCallback((ms) =>
     new Date(ms).toLocaleString(locale, {
       day: "2-digit",
       month: "short",
       hour: "2-digit",
       minute: "2-digit",
-    });
+    }), [locale]);
 
-  const ultimaFechaFmt = useMemo(() => (ultimaFecha ? formatFecha(ultimaFecha) : null), [ultimaFecha]);
+  const ultimaFechaFmt = useMemo(() => (ultimaFecha ? formatFecha(ultimaFecha) : null), [ultimaFecha, formatFecha]);
 
   return (
     <div className="sensores-layout">
@@ -266,7 +268,10 @@ export default function ColmenaDetallePage() {
           {fail && (
             <div className="empty-box error" style={{ color: "#ff6b6b" }}>
               <h4>{t("det.errorTitle")}</h4>
-              <p>{t("det.errorText", { url: `GET ${API_BASE_URL}/colmenas/${id}/detalle` })}</p>
+              <p>{fail}</p>
+              <button className="pill" onClick={() => setReloadCount((count) => count + 1)}>
+                {t("common.retry")}
+              </button>
             </div>
           )}
         </div>
